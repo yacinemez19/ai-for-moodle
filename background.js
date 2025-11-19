@@ -2,10 +2,10 @@
 // 1. CONSTRUCTION DU PROMPT
 // ============================================
 
-function buildPromptMultichoice(questionData) {
+function buildPromptMultichoice(prompt, questionData) {
   const { questionText, subtype, options } = questionData;
   
-  let prompt = `Tu es un assistant éducatif expert. Réponds à cette question de QCM de manière précise.\n\n`;
+  prompt += `Réponds à cette question de QCM de manière précise.\n\n`;
   prompt += `QUESTION:\n${questionText}\n\n`;
   prompt += `OPTIONS:\n`;
   
@@ -14,7 +14,7 @@ function buildPromptMultichoice(questionData) {
   });
   
   if (subtype === 'multiple') {
-    prompt += `\n⚠️ ATTENTION: Plusieurs réponses peuvent être correctes.\n`;
+    prompt += `\n⚠️ ATTENTION: Une seule réponse est correcte.\n`;
   }
   
   prompt += `\nINSTRUCTIONS:\n`;
@@ -29,10 +29,10 @@ function buildPromptMultichoice(questionData) {
   return prompt;
 }
 
-function buildPromptMatch(questionData) {
+function buildPromptMatch(prompt, questionData) {
   const { questionText, items, choices } = questionData;
   
-  let prompt = `Tu es un assistant éducatif expert. Réponds à cette question d'association/correspondance de manière précise.\n\n`;
+  prompt += `Réponds à cette question d'association/correspondance de manière précise.\n\n`;
   prompt += `QUESTION:\n${questionText}\n\n`;
   prompt += `ÉLÉMENTS À ASSOCIER:\n`;
   
@@ -61,10 +61,10 @@ function buildPromptMatch(questionData) {
   return prompt;
 }
 
-function buildPromptTrueFalse(questionData) {
+function buildPromptTrueFalse(prompt, questionData) {
   const { questionText } = questionData;
   
-  let prompt = `Tu es un assistant éducatif expert. Réponds à cette question Vrai/Faux de manière précise.\n\n`;
+  prompt += `Réponds à cette question Vrai/Faux de manière précise.\n\n`;
   prompt += `QUESTION:\n${questionText}\n\n`;
   prompt += `OPTIONS:\n`;
   prompt += `- Vrai\n`;
@@ -84,12 +84,13 @@ function buildPromptTrueFalse(questionData) {
 }
 
 function buildPrompt(questionData) {
+  prompt = `Tu es un expert en économie et en gestion d'entreprise. Tu réponds toujours de manière concise et précise. Et tu fais bien attention à donner des réponses correctes.\n`;
   if (questionData.type === 'multichoice') {
-    return buildPromptMultichoice(questionData);
+    return buildPromptMultichoice(prompt, questionData);
   } else if (questionData.type === 'match') {
-    return buildPromptMatch(questionData);
+    return buildPromptMatch(prompt, questionData);
   } else if (questionData.type === 'truefalse') {
-    return buildPromptTrueFalse(questionData);
+    return buildPromptTrueFalse(prompt, questionData);
   }
   
   throw new Error('Type de question non supporté: ' + questionData.type);
@@ -113,7 +114,7 @@ async function callGeminiAPI(prompt, apiKey) {
         parts: [{ text: prompt }]
       }],
       generationConfig: {
-        temperature: 0.3,
+        temperature: 0.7,
         maxOutputTokens: 500,
         topK: 40,
         topP: 0.95
