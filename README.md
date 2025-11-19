@@ -42,11 +42,12 @@ Clonez ou téléchargez ce dépôt sur votre ordinateur.
 1. **Naviguez vers une page de quiz Moodle**
    - L'extension fonctionne sur les pages contenant des questions QCM
 
-2. **Repérez le bouton flottant 🤖**
-   - Un bouton violet apparaît en bas à droite de la page
+2. **Utilisez le raccourci clavier**
+   - Appuyez sur **Ctrl+K** (Windows/Linux) ou **Cmd+K** (Mac)
+   - Un indicateur vous informe du raccourci au chargement de la page
 
-3. **Cliquez sur le bouton**
-   - L'extension analyse la question automatiquement
+3. **L'extension analyse la question**
+   - Un indicateur de chargement apparaît en haut à droite
 
 4. **Consultez la réponse**
    - Un modal s'affiche avec :
@@ -104,13 +105,14 @@ extension_chat/
 
 ## 🐛 Dépannage
 
-### Le bouton n'apparaît pas
+### Le raccourci clavier ne fonctionne pas
 - Vérifiez que vous êtes sur une page contenant une question supportée :
   - QCM (`.que.multichoice`)
   - Association (`.que.match`)
   - Vrai/Faux (`.que.truefalse`)
 - Rechargez la page
 - Vérifiez que l'extension est bien activée dans `chrome://extensions/`
+- Vérifiez les raccourcis de l'extension dans `chrome://extensions/shortcuts`
 
 ### Erreur "Clé API non configurée"
 - Ouvrez la popup de l'extension

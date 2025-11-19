@@ -172,6 +172,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
+// ============================================
+// 5. GESTIONNAIRE DE RACCOURCIS CLAVIER
+// ============================================
+
+chrome.commands.onCommand.addListener((command) => {
+  if (command === 'analyze-question') {
+    // Envoyer un message à l'onglet actif pour déclencher l'analyse
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, { action: 'trigger-analyze' });
+      }
+    });
+  }
+});
+
 async function handleAnalyze(questionData) {
   console.log('[Background] Analyzing question:', questionData);
   

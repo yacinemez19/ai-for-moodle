@@ -115,44 +115,25 @@ function extractQuestion() {
 }
 
 // ============================================
-// 2. BOUTON FLOTTANT
+// 2. RACCOURCI CLAVIER
 // ============================================
 
-function createFloatingButton() {
-  // Ne créer qu'une seule fois
-  if (document.getElementById('gemini-analyze-btn')) return;
-  
-  const button = document.createElement('button');
-  button.id = 'gemini-analyze-btn';
-  button.innerHTML = '🤖';
-  button.style.cssText = `
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: none;
-    color: white;
-    font-size: 28px;
-    cursor: pointer;
-    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
-    z-index: 9999;
-    transition: transform 0.2s;
-  `;
-  
-  button.addEventListener('mouseover', () => {
-    button.style.transform = 'scale(1.1)';
+function setupKeyboardShortcut() {
+  // Écouter le raccourci Ctrl+K (ou Cmd+K sur Mac)
+  document.addEventListener('keydown', (event) => {
+    // Vérifier si Ctrl+K (ou Cmd+K sur Mac) est pressé
+    if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+      // Empêcher le comportement par défaut du navigateur
+      event.preventDefault();
+      
+      // Vérifier qu'on est bien sur une page de quiz
+      if (document.querySelector('.que.multichoice') || 
+          document.querySelector('.que.match') || 
+          document.querySelector('.que.truefalse')) {
+        handleAnalyze();
+      }
+    }
   });
-  
-  button.addEventListener('mouseout', () => {
-    button.style.transform = 'scale(1)';
-  });
-  
-  button.addEventListener('click', handleAnalyze);
-  
-  document.body.appendChild(button);
 }
 
 // ============================================
@@ -160,17 +141,15 @@ function createFloatingButton() {
 // ============================================
 
 async function handleAnalyze() {
-  const button = document.getElementById('gemini-analyze-btn');
-  
-  // Loading
-  button.textContent = '⏳';
-  button.disabled = true;
+  // Afficher un indicateur de chargement
+  showLoadingIndicator();
   
   try {
     // Extraire la question
     const questionData = extractQuestion();
     
     if (!questionData) {
+      hideLoadingIndicator();
       alert('❌ Aucune question détectée sur cette page');
       return;
     }
@@ -179,6 +158,7 @@ async function handleAnalyze() {
     chrome.runtime.sendMessage(
       { action: 'analyze', data: questionData },
       (response) => {
+        hideLoadingIndicator();
         if (response.success) {
           showModal(questionData, response.data);
         } else {
@@ -188,11 +168,40 @@ async function handleAnalyze() {
     );
     
   } catch (error) {
+    hideLoadingIndicator();
     alert(`❌ Erreur: ${error.message}`);
-  } finally {
-    // Reset button
-    button.textContent = '🤖';
-    button.disabled = false;
+  }
+}
+
+function showLoadingIndicator() {
+  // Supprimer l'indicateur existant s'il y en a un
+  hideLoadingIndicator();
+  
+  const loader = document.createElement('div');
+  loader.id = 'gemini-loading-indicator';
+  loader.innerHTML = '⏳ Analyse en cours...';
+  loader.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+    z-index: 9999;
+    font-size: 16px;
+    font-weight: 500;
+    animation: fadeIn 0.3s ease-in;
+  `;
+  
+  document.body.appendChild(loader);
+}
+
+function hideLoadingIndicator() {
+  const loader = document.getElementById('gemini-loading-indicator');
+  if (loader) {
+    loader.remove();
   }
 }
 
@@ -349,13 +358,52 @@ function showModal(questionData, responseData) {
 }
 
 // ============================================
-// 5. INITIALISATION
+// 5. GESTIONNAIRE DE MESSAGES DU BACKGROUND
 // ============================================
 
-// Détecter si on est sur une page de quiz
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === 'trigger-analyze') {
+    handleAnalyze();
+  }
+});
+
+// ============================================
+// 6. INITIALISATION
+// ============================================
+
+// Activer le raccourci clavier sur toutes les pages
+setupKeyboardShortcut();
+
+// Afficher une notification si on est sur une page de quiz
 if (document.querySelector('.que.multichoice') || 
     document.querySelector('.que.match') || 
     document.querySelector('.que.truefalse')) {
-  createFloatingButton();
+  showShortcutHint();
+}
+
+function showShortcutHint() {
+  const hint = document.createElement('div');
+  hint.id = 'gemini-shortcut-hint';
+  hint.innerHTML = '💡 Appuyez sur <kbd>Ctrl+K</kbd> pour analyser la question';
+  hint.style.cssText = `
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 12px 16px;
+    background: rgba(102, 126, 234, 0.95);
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+    z-index: 9999;
+    font-size: 14px;
+    animation: fadeInOut 4s ease-in-out;
+  `;
+  
+  document.body.appendChild(hint);
+  
+  // Supprimer après 4 secondes
+  setTimeout(() => {
+    hint.remove();
+  }, 4000);
 }
 
