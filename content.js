@@ -75,6 +75,23 @@ function extractMatchQuestion(questionDiv) {
   };
 }
 
+function extractTrueFalseQuestion(questionDiv) {
+  // Texte de la question
+  const questionText = questionDiv.querySelector('.qtext')?.innerText.trim();
+  if (!questionText) return null;
+  
+  // Vérifier la présence des deux options Vrai/Faux
+  const trueOption = questionDiv.querySelector('input[id*="answertrue"]');
+  const falseOption = questionDiv.querySelector('input[id*="answerfalse"]');
+  
+  if (!trueOption || !falseOption) return null;
+  
+  return { 
+    questionText, 
+    type: 'truefalse'
+  };
+}
+
 function extractQuestion() {
   // Essayer de détecter une question multichoice
   let questionDiv = document.querySelector('.que.multichoice');
@@ -86,6 +103,12 @@ function extractQuestion() {
   questionDiv = document.querySelector('.que.match');
   if (questionDiv) {
     return extractMatchQuestion(questionDiv);
+  }
+  
+  // Essayer de détecter une question vrai/faux
+  questionDiv = document.querySelector('.que.truefalse');
+  if (questionDiv) {
+    return extractTrueFalseQuestion(questionDiv);
   }
   
   return null;
@@ -228,6 +251,16 @@ function showModal(questionData, responseData) {
         </ul>
       </div>
     `;
+  } else if (questionData.type === 'truefalse') {
+    optionsHTML = `
+      <div style="margin: 16px 0;">
+        <h3 style="color: #333;">📋 Options:</h3>
+        <ul style="color: #555;">
+          <li>✅ Vrai</li>
+          <li>❌ Faux</li>
+        </ul>
+      </div>
+    `;
   }
   
   modal.innerHTML = `
@@ -320,7 +353,9 @@ function showModal(questionData, responseData) {
 // ============================================
 
 // Détecter si on est sur une page de quiz
-if (document.querySelector('.que.multichoice') || document.querySelector('.que.match')) {
+if (document.querySelector('.que.multichoice') || 
+    document.querySelector('.que.match') || 
+    document.querySelector('.que.truefalse')) {
   createFloatingButton();
 }
 

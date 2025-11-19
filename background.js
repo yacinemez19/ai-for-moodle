@@ -61,11 +61,35 @@ function buildPromptMatch(questionData) {
   return prompt;
 }
 
+function buildPromptTrueFalse(questionData) {
+  const { questionText } = questionData;
+  
+  let prompt = `Tu es un assistant éducatif expert. Réponds à cette question Vrai/Faux de manière précise.\n\n`;
+  prompt += `QUESTION:\n${questionText}\n\n`;
+  prompt += `OPTIONS:\n`;
+  prompt += `- Vrai\n`;
+  prompt += `- Faux\n`;
+  
+  prompt += `\nINSTRUCTIONS:\n`;
+  prompt += `1. Détermine si l'affirmation est vraie ou fausse\n`;
+  prompt += `2. Justifie ta réponse de manière pédagogique\n`;
+  prompt += `3. Sois concis mais précis\n`;
+  prompt += `4. Explique pourquoi c'est vrai ou pourquoi c'est faux\n\n`;
+  
+  prompt += `FORMAT DE RÉPONSE (IMPORTANT - RESPECTE CE FORMAT):\n`;
+  prompt += `REPONSE: [Vrai ou Faux]\n`;
+  prompt += `JUSTIFICATION: [Explication en 2-3 phrases maximum]\n`;
+  
+  return prompt;
+}
+
 function buildPrompt(questionData) {
   if (questionData.type === 'multichoice') {
     return buildPromptMultichoice(questionData);
   } else if (questionData.type === 'match') {
     return buildPromptMatch(questionData);
+  } else if (questionData.type === 'truefalse') {
+    return buildPromptTrueFalse(questionData);
   }
   
   throw new Error('Type de question non supporté: ' + questionData.type);

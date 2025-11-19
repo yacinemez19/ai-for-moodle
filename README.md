@@ -4,10 +4,11 @@ Extension Chrome qui utilise Gemini AI pour aider à répondre aux questions QCM
 
 ## 🎯 Fonctionnalités
 
-- ✅ Détection automatique des questions QCM sur Moodle
+- ✅ Détection automatique des questions sur Moodle
 - ✅ Extraction intelligente de la question et des options
 - ✅ Support des questions à choix multiples (multichoice)
 - ✅ Support des questions d'association/correspondance (match)
+- ✅ Support des questions vrai/faux (truefalse)
 - ✅ Analyse par Gemini 2.0 Flash Exp
 - ✅ Affichage de la réponse suggérée avec justification
 - ✅ Interface simple et intuitive
@@ -60,8 +61,9 @@ Clonez ou téléchargez ce dépôt sur votre ordinateur.
 ## ⚠️ Limitations du MVP
 
 ### Ce qui fonctionne
-✅ Questions QCM avec texte simple (choix unique ou multiple)
+✅ Questions à choix multiples (choix unique ou multiple)
 ✅ Questions d'association/correspondance (match) avec menus déroulants
+✅ Questions vrai/faux (truefalse)
 ✅ Affichage de la réponse avec justification détaillée
 
 ### Ce qui ne fonctionne pas (hors scope MVP)
@@ -69,6 +71,7 @@ Clonez ou téléchargez ce dépôt sur votre ordinateur.
 ❌ Questions avec formules mathématiques  
 ❌ Questions ouvertes (essai, texte libre)  
 ❌ Questions de type "drag and drop"  
+❌ Questions numériques
 ❌ Historique des questions  
 
 ## 🔒 Confidentialité et sécurité
@@ -102,7 +105,10 @@ extension_chat/
 ## 🐛 Dépannage
 
 ### Le bouton n'apparaît pas
-- Vérifiez que vous êtes sur une page contenant une question QCM (`.que.multichoice`) ou d'association (`.que.match`)
+- Vérifiez que vous êtes sur une page contenant une question supportée :
+  - QCM (`.que.multichoice`)
+  - Association (`.que.match`)
+  - Vrai/Faux (`.que.truefalse`)
 - Rechargez la page
 - Vérifiez que l'extension est bien activée dans `chrome://extensions/`
 
