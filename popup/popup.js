@@ -26,3 +26,4 @@ chrome.storage.local.get(['apiKey'], (result) => {
   }
 });
 
+
