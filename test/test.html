@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test RAG - Moodle Gemini Assistant</title>
+  <link rel="stylesheet" href="test.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🧪 Page de Test RAG</h1>
+      <p class="subtitle">Testez votre configuration RAG avec des questions personnalisées</p>
+    </header>
+
+    <!-- Statut RAG -->
+    <div class="status-section">
+      <div id="rag-status" class="status-card">
+        <span class="status-icon">⏳</span>
+        <span class="status-text">Vérification de la configuration...</span>
+      </div>
+    </div>
+
+    <!-- Questions prédéfinies -->
+    <section class="section">
+      <h2>📝 Questions de test prédéfinies</h2>
+      <p class="info">Cliquez sur une question pour la tester avec votre RAG</p>
+      
+      <div class="questions-grid" id="predefined-questions">
+        <!-- Sera rempli par JS -->
+      </div>
+    </section>
+
+    <!-- Créer une question personnalisée -->
+    <section class="section">
+      <h2>✏️ Créer une question personnalisée</h2>
+      
+      <div class="form-group">
+        <label for="custom-question">Question :</label>
+        <textarea id="custom-question" rows="3" placeholder="Entrez votre question..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="question-type">Type de question :</label>
+        <select id="question-type">
+          <option value="multichoice">QCM (choix unique)</option>
+          <option value="multiple">QCM (choix multiples)</option>
+          <option value="truefalse">Vrai/Faux</option>
+        </select>
+      </div>
+
+      <div id="options-container">
+        <label>Options de réponse :</label>
+        <div id="options-list">
+          <div class="option-item">
+            <input type="text" class="option-input" placeholder="Option A" data-letter="a">
+            <button class="remove-option-btn" title="Supprimer">❌</button>
+          </div>
+          <div class="option-item">
+            <input type="text" class="option-input" placeholder="Option B" data-letter="b">
+            <button class="remove-option-btn" title="Supprimer">❌</button>
+          </div>
+        </div>
+        <button id="add-option-btn" class="secondary-btn">➕ Ajouter une option</button>
+      </div>
+
+      <button id="test-custom-btn" class="primary-btn">🚀 Tester cette question</button>
+    </section>
+
+    <!-- Résultat du test -->
+    <section class="section" id="result-section" style="display: none;">
+      <h2>📊 Résultat du test</h2>
+      
+      <div class="result-card">
+        <div class="result-header">
+          <h3>Question testée :</h3>
+          <p id="tested-question"></p>
+        </div>
+
+        <div class="result-body">
+          <div class="result-item">
+            <h4>✅ Réponse suggérée :</h4>
+            <div id="answer-result" class="answer-box"></div>
+          </div>
+
+          <div class="result-item">
+            <h4>💡 Justification :</h4>
+            <div id="justification-result" class="justification-box"></div>
+          </div>
+
+          <div class="result-item">
+            <h4>⏱️ Temps de réponse :</h4>
+            <div id="response-time"></div>
+          </div>
+
+          <div class="result-item">
+            <h4>🔍 Mode utilisé :</h4>
+            <div id="mode-used"></div>
+          </div>
+        </div>
+
+        <div class="result-actions">
+          <button id="copy-result-btn" class="secondary-btn">📋 Copier le résultat</button>
+          <button id="test-another-btn" class="secondary-btn">🔄 Tester une autre question</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Historique des tests -->
+    <section class="section">
+      <div class="section-header">
+        <h2>📜 Historique des tests</h2>
+        <button id="clear-history-btn" class="danger-btn-small">🗑️ Effacer</button>
+      </div>
+      
+      <div id="history-list" class="history-list">
+        <p class="empty-message">Aucun test effectué pour le moment</p>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <p>💡 <strong>Astuce :</strong> Indexez d'abord vos cours via le popup de l'extension pour tester le RAG</p>
+      <button id="back-to-popup-btn" class="link-btn">← Retour au popup</button>
+    </footer>
+  </div>
+
+  <!-- Overlay de chargement -->
+  <div id="loading-overlay" style="display: none;">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <p>Analyse en cours...</p>
+    </div>
+  </div>
+
+  <script src="test.js"></script>
+</body>
+</html>
+

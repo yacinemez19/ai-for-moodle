@@ -97,11 +97,60 @@ function buildPrompt(questionData) {
 }
 
 // ============================================
-// 2. APPEL API GEMINI
+// 2. APPEL API GEMINI AVEC FILE SEARCH
 // ============================================
 
 async function callGeminiAPI(prompt, apiKey) {
   const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
+  
+  // Récupérer la configuration RAG
+  const storage = await chrome.storage.local.get(['fileStoreId', 'fileStoreStatus']);
+  
+  // Construire le body de la requête
+  const body = {
+    contents: [{
+      parts: [{ text: prompt }]
+    }],
+    generationConfig: {
+      temperature: 0.7,
+      maxOutputTokens: 500,
+      topK: 40,
+      topP: 0.95
+    }
+  };
+  
+  // Ajouter File Search si disponible
+  if (storage.fileStoreStatus === 'active' && storage.fileStoreId) {
+    console.log('[Background] RAG activé avec File Store:', storage.fileStoreId);
+    
+    body.systemInstruction = {
+      parts: [{
+        text: `Tu es un tuteur académique qui répond STRICTEMENT selon les cours fournis dans la base de connaissances.
+
+RÈGLES IMPÉRATIVES :
+1. Tu dois te baser UNIQUEMENT sur les documents indexés
+2. Si l'information n'est pas dans ces documents, tu dis "Je ne trouve pas cette information dans les cours fournis"
+3. Tu privilégies TOUJOURS le vocabulaire et les définitions exactes du cours
+4. Si ta connaissance générale contredit le cours, tu suis le cours
+5. Tu réponds de manière concise et pédagogique
+
+FORMAT DE RÉPONSE :
+- Réponds de manière structurée
+- Utilise le format demandé (REPONSE: / JUSTIFICATION:)
+- Reste dans le contexte académique de L2 gestion/économie`
+      }]
+    };
+    
+    body.tools = [
+      {
+        fileSearch: {
+          fileStoreIds: [storage.fileStoreId]
+        }
+      }
+    ];
+  } else {
+    console.log('[Background] RAG non activé, utilisation de la connaissance générale');
+  }
   
   const response = await fetch(url, {
     method: 'POST',
@@ -109,17 +158,7 @@ async function callGeminiAPI(prompt, apiKey) {
       'Content-Type': 'application/json',
       'x-goog-api-key': apiKey
     },
-    body: JSON.stringify({
-      contents: [{
-        parts: [{ text: prompt }]
-      }],
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 500,
-        topK: 40,
-        topP: 0.95
-      }
-    })
+    body: JSON.stringify(body)
   });
   
   if (!response.ok) {
@@ -130,6 +169,181 @@ async function callGeminiAPI(prompt, apiKey) {
   
   const data = await response.json();
   return data;
+}
+
+// ============================================
+// 2B. INDEXATION DES COURS (RAG)
+// ============================================
+
+async function handleIndexCourses(message) {
+  const { apiKey, filesData } = message;
+  
+  console.log(`[Background] Indexation de ${filesData.length} fichier(s)...`);
+  
+  try {
+    // 1. Créer le File Store
+    console.log('[Background] Création du File Store...');
+    const storeResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/fileStores?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          displayName: 'Cours_Moodle_Assistant'
+        })
+      }
+    );
+    
+    if (!storeResponse.ok) {
+      const errorText = await storeResponse.text();
+      console.error('[Background] Erreur création store:', errorText);
+      throw new Error(`Erreur création store : ${storeResponse.status}`);
+    }
+    
+    const store = await storeResponse.json();
+    const fileStoreId = store.name;
+    console.log('[Background] Store créé:', fileStoreId);
+    
+    // 2. Uploader et indexer chaque fichier
+    const uploadedFiles = [];
+    
+    for (let i = 0; i < filesData.length; i++) {
+      const fileData = filesData[i];
+      console.log(`[Background] Upload de ${fileData.name} (${i + 1}/${filesData.length})...`);
+      
+      try {
+        // Upload du fichier
+        const uploadedFile = await uploadAndIndexFile(apiKey, fileData);
+        uploadedFiles.push({
+          name: fileData.name,
+          uri: uploadedFile.name,
+          state: 'ACTIVE',
+          mimeType: fileData.mimeType
+        });
+        
+        console.log(`[Background] ✅ ${fileData.name} indexé`);
+      } catch (error) {
+        console.error(`[Background] ❌ Erreur avec ${fileData.name}:`, error);
+        // Continuer avec les autres fichiers
+      }
+    }
+    
+    if (uploadedFiles.length === 0) {
+      throw new Error('Aucun fichier n\'a pu être indexé');
+    }
+    
+    // 3. Sauvegarder la configuration
+    await chrome.storage.local.set({
+      fileStoreId: fileStoreId,
+      fileStoreStatus: 'active',
+      fileStoreFiles: uploadedFiles,
+      lastIndexDate: new Date().toISOString()
+    });
+    
+    console.log(`[Background] ✅ Indexation terminée : ${uploadedFiles.length} fichier(s)`);
+    
+    return {
+      fileStoreId: fileStoreId,
+      filesCount: uploadedFiles.length
+    };
+    
+  } catch (error) {
+    console.error('[Background] Erreur d\'indexation:', error);
+    throw error;
+  }
+}
+
+async function uploadAndIndexFile(apiKey, fileData) {
+  // Décoder le base64
+  const binaryString = atob(fileData.data);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  
+  // 1. Initier l'upload
+  const initiateResponse = await fetch(
+    `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`,
+    {
+      method: 'POST',
+      headers: {
+        'X-Goog-Upload-Protocol': 'resumable',
+        'X-Goog-Upload-Command': 'start',
+        'X-Goog-Upload-Header-Content-Length': fileData.size.toString(),
+        'X-Goog-Upload-Header-Content-Type': fileData.mimeType,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        file: {
+          display_name: fileData.name
+        }
+      })
+    }
+  );
+  
+  if (!initiateResponse.ok) {
+    const errorText = await initiateResponse.text();
+    throw new Error(`Erreur initiation upload: ${errorText}`);
+  }
+  
+  const uploadUrl = initiateResponse.headers.get('X-Goog-Upload-URL');
+  if (!uploadUrl) {
+    throw new Error('Pas d\'URL d\'upload retournée');
+  }
+  
+  // 2. Uploader le contenu
+  const uploadResponse = await fetch(uploadUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Length': bytes.length.toString(),
+      'X-Goog-Upload-Offset': '0',
+      'X-Goog-Upload-Command': 'upload, finalize'
+    },
+    body: bytes
+  });
+  
+  if (!uploadResponse.ok) {
+    const errorText = await uploadResponse.text();
+    throw new Error(`Erreur envoi contenu: ${errorText}`);
+  }
+  
+  const uploadResult = await uploadResponse.json();
+  const fileName = uploadResult.file.name;
+  
+  // 3. Attendre l'indexation
+  let attempts = 0;
+  const maxAttempts = 60; // 2 minutes max
+  
+  while (attempts < maxAttempts) {
+    await sleep(2000); // Attendre 2 secondes
+    
+    const statusResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/${fileName}?key=${apiKey}`
+    );
+    
+    if (!statusResponse.ok) {
+      throw new Error('Erreur vérification statut');
+    }
+    
+    const fileStatus = await statusResponse.json();
+    
+    if (fileStatus.state === 'ACTIVE') {
+      return fileStatus;
+    }
+    
+    if (fileStatus.state === 'FAILED') {
+      throw new Error('Indexation échouée');
+    }
+    
+    // État PROCESSING, continuer à attendre
+    attempts++;
+  }
+  
+  throw new Error('Timeout : indexation trop longue');
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // ============================================
@@ -166,6 +380,14 @@ function parseGeminiResponse(data) {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'analyze') {
     handleAnalyze(message.data)
+      .then(result => sendResponse({ success: true, data: result }))
+      .catch(error => sendResponse({ success: false, error: error.message }));
+    
+    return true; // Indique une réponse asynchrone
+  }
+  
+  if (message.action === 'indexCourses') {
+    handleIndexCourses(message)
       .then(result => sendResponse({ success: true, data: result }))
       .catch(error => sendResponse({ success: false, error: error.message }));
     

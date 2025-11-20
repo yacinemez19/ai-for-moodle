@@ -43,6 +43,13 @@
     "default_popup": "popup/popup.html",
     "default_icon": "icon.png"
   },
+
+  "web_accessible_resources": [
+    {
+      "resources": ["test/*"],
+      "matches": ["<all_urls>"]
+    }
+  ],
   
   "icons": {
     "16": "icon.png",

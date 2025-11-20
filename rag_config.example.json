@@ -1,0 +1,26 @@
+{
+  "fileStoreId": "stores/abc123xyz",
+  "fileStoreStatus": "active",
+  "fileStoreFiles": [
+    {
+      "name": "Comptabilité_L2.pdf",
+      "uri": "files/abc123",
+      "state": "ACTIVE",
+      "mimeType": "application/pdf"
+    },
+    {
+      "name": "Marketing_Fondamental.pdf",
+      "uri": "files/def456",
+      "state": "ACTIVE",
+      "mimeType": "application/pdf"
+    },
+    {
+      "name": "Notes_Cours.md",
+      "uri": "files/ghi789",
+      "state": "ACTIVE",
+      "mimeType": "text/markdown"
+    }
+  ],
+  "lastIndexDate": "2024-11-20T10:30:00.000Z"
+}
+

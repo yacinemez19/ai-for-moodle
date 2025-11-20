@@ -10,6 +10,8 @@ Extension Chrome qui utilise Gemini AI pour aider à répondre aux questions QCM
 - ✅ Support des questions d'association/correspondance (match)
 - ✅ Support des questions vrai/faux (truefalse)
 - ✅ Analyse par Gemini 2.0 Flash Exp
+- ✅ **RAG (Retrieval-Augmented Generation)** : Utilisez vos propres cours PDF/TXT/MD
+- ✅ **Page de test intégrée** : Testez votre configuration RAG sans aller sur Moodle
 - ✅ Affichage de la réponse suggérée avec justification
 - ✅ Interface simple et intuitive
 
@@ -36,6 +38,30 @@ Clonez ou téléchargez ce dépôt sur votre ordinateur.
 1. Cliquez sur l'icône de l'extension dans la barre d'outils
 2. Entrez votre clé API Gemini
 3. Cliquez sur **Enregistrer**
+
+### 4. (Optionnel) Configurer le RAG avec vos cours
+
+Pour que l'extension utilise **vos propres cours** au lieu de la connaissance générale de Gemini :
+
+1. Placez vos fichiers de cours (PDF, TXT, MD) dans un dossier
+2. Allez dans le dossier `scripts/`
+3. Lancez la commande :
+   ```bash
+   node upload_courses.mjs VOTRE_CLE_API chemin/vers/vos/cours
+   ```
+4. Une fois l'indexation terminée, importez le fichier `rag_config.json` généré via l'extension
+
+📚 Consultez le [Guide RAG détaillé](./GUIDE_RAG.md) pour plus d'informations.
+
+### 5. (Optionnel) Utiliser la page de test
+
+Pour tester votre configuration RAG sans aller sur Moodle :
+
+1. Ouvrez le popup de l'extension
+2. Cliquez sur **"🧪 Ouvrir la page de test RAG"**
+3. Testez avec les questions prédéfinies ou créez les vôtres
+
+📚 Consultez le [Guide de la page de test](./GUIDE_PAGE_TEST.md) pour plus d'informations.
 
 ## 📖 Utilisation
 
@@ -92,15 +118,22 @@ L'utilisation de cet outil pendant des examens officiels peut être considérée
 
 ```
 extension_chat/
-├── manifest.json           # Configuration de l'extension
+├── manifest.json              # Configuration de l'extension
 ├── popup/
-│   ├── popup.html         # Interface de configuration
-│   ├── popup.js           # Logique de configuration
-│   └── popup.css          # Styles de la popup
-├── content.js             # Script d'extraction et UI
-├── background.js          # Appel API Gemini
-├── styles.css             # Styles du modal
-└── README.md              # Documentation
+│   ├── popup.html            # Interface de configuration
+│   ├── popup.js              # Logique de configuration
+│   └── popup.css             # Styles de la popup
+├── content.js                # Script d'extraction et UI
+├── background.js             # Appel API Gemini
+├── styles.css                # Styles du modal
+├── scripts/
+│   ├── upload_courses.mjs    # Script d'indexation RAG
+│   ├── package.json          # Configuration Node.js
+│   └── README.md             # Guide des scripts
+├── DEVBOOK_RAG.md            # Documentation technique RAG
+├── GUIDE_RAG.md              # Guide utilisateur RAG
+├── rag_config.example.json   # Exemple de configuration RAG
+└── README.md                 # Documentation générale
 ```
 
 ## 🐛 Dépannage

@@ -8,15 +8,92 @@
 <body>
   <div class="container">
     <h2>🤖 Configuration</h2>
-    <p>Entrez votre clé API Gemini :</p>
-    <input type="password" id="api-key" placeholder="AIzaSy...">
-    <button id="save-btn">Enregistrer</button>
-    <p id="status"></p>
-    <p class="info">
-      <a href="https://aistudio.google.com/apikey" target="_blank">
-        Obtenir une clé API
-      </a>
-    </p>
+    
+    <!-- Section Clé API -->
+    <div class="section">
+      <h3>🔑 Clé API Gemini</h3>
+      <input type="password" id="api-key" placeholder="AIzaSy...">
+      <p class="info">
+        <a href="https://aistudio.google.com/apikey" target="_blank">
+          Obtenir une clé API
+        </a>
+      </p>
+    </div>
+
+    <!-- Section RAG / Cours -->
+    <div class="section">
+      <h3>📚 Cours & Documents (RAG)</h3>
+      
+      <div id="rag-status" class="rag-status">
+        <span id="status-icon">⚪</span>
+        <span id="status-text">Aucun cours indexé</span>
+      </div>
+
+      <!-- Pas de cours : afficher sélection -->
+      <div id="no-courses-section">
+        <p class="info-text">
+          Ajoutez vos cours (PDF, TXT, MD) pour que l'IA réponde à partir de vos documents.
+        </p>
+        <input type="file" id="file-input" accept=".pdf,.txt,.md" multiple style="display: none;">
+        <button id="select-files-btn" class="secondary-btn">
+          📁 Sélectionner des fichiers
+        </button>
+      </div>
+
+      <!-- Fichiers sélectionnés : afficher liste et bouton upload -->
+      <div id="files-selected-section" style="display: none;">
+        <div class="files-list-container">
+          <p class="section-title">Fichiers sélectionnés :</p>
+          <ul id="files-list" class="files-list"></ul>
+        </div>
+        <div class="button-group">
+          <button id="upload-btn" class="primary-btn">
+            🚀 Indexer les cours
+          </button>
+          <button id="cancel-selection-btn" class="secondary-btn">
+            Annuler
+          </button>
+        </div>
+      </div>
+
+      <!-- Indexation en cours -->
+      <div id="indexing-section" style="display: none;">
+        <div class="progress-container">
+          <p id="progress-text">Indexation en cours...</p>
+          <div class="progress-bar">
+            <div id="progress-fill"></div>
+          </div>
+          <p id="progress-details" class="progress-details"></p>
+        </div>
+      </div>
+
+      <!-- Cours indexés : afficher liste et actions -->
+      <div id="courses-indexed-section" style="display: none;">
+        <div class="files-list-container">
+          <ul id="indexed-files-list" class="files-list"></ul>
+          <p id="index-date" class="index-date"></p>
+        </div>
+        <div class="button-group">
+          <button id="reindex-btn" class="secondary-btn">
+            🔄 Réindexer
+          </button>
+          <button id="delete-courses-btn" class="danger-btn">
+            🗑️ Supprimer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bouton principal -->
+    <button id="save-btn" class="save-btn">💾 Enregistrer</button>
+    <p id="status" class="status-message"></p>
+
+    <!-- Lien vers la page de test -->
+    <div class="test-link-section">
+      <button id="open-test-page-btn" class="test-link-btn">
+        🧪 Ouvrir la page de test RAG
+      </button>
+    </div>
   </div>
   <script src="popup.js"></script>
 </body>

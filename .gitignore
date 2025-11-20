@@ -1,6 +1,25 @@
+# Documentation de développement
 CHANGELOG.md
 DEVBOOK_MVP.md
 MATCH_QUESTIONS.md
 RESUME_MODIFICATIONS.md
 SHORTCUTS_GUIDE.md
 MIGRATION_v1.1.md
+
+# Fichiers de configuration RAG (sensibles)
+rag_config.json
+
+# Node modules (si ajoutés)
+node_modules/
+scripts/node_modules/
+
+# Fichiers de test
+test_courses/
+mes_cours/
+*.pdf
+*.txt
+*.md
+!README.md
+!DEVBOOK_RAG.md
+!GUIDE_RAG.md
+!scripts/README.md

@@ -1,0 +1,13 @@
+{
+  "name": "moodle-gemini-assistant-scripts",
+  "version": "1.0.0",
+  "description": "Scripts utilitaires pour Moodle Gemini Assistant",
+  "type": "module",
+  "scripts": {
+    "upload": "node upload_courses.mjs"
+  },
+  "keywords": ["gemini", "moodle", "rag"],
+  "author": "",
+  "license": "MIT"
+}
+
