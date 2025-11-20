@@ -292,6 +292,11 @@ function showModal(questionData, responseData) {
       
       ${optionsHTML}
       
+      <div style="margin: 16px 0;">
+        <h3 style="color: #333;">🧠 Réflexion:</h3>
+        <p style="color: #555; line-height: 1.6; white-space: pre-line;">${responseData.reasoning}</p>
+      </div>
+      
       <div style="
         background: #f0fdf4;
         padding: 16px;
@@ -305,12 +310,8 @@ function showModal(questionData, responseData) {
           color: #16a34a;
           margin: 8px 0;
           line-height: 1.6;
+          white-space: pre-line;
         ">${responseData.answer}</div>
-      </div>
-      
-      <div style="margin: 16px 0;">
-        <h3 style="color: #333;">💡 Justification:</h3>
-        <p style="color: #555; line-height: 1.6;">${responseData.reasoning}</p>
       </div>
       
       <div style="

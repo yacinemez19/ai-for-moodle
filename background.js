@@ -14,17 +14,18 @@ function buildPromptMultichoice(prompt, questionData) {
   });
   
   if (subtype === 'multiple') {
-    prompt += `\n⚠️ ATTENTION: Une seule réponse est correcte.\n`;
+    prompt += `\n⚠️ ATTENTION: Plusieurs réponses possibles.\n`;
   }
   
   prompt += `\nINSTRUCTIONS:\n`;
-  prompt += `1. Identifie la/les bonne(s) réponse(s)\n`;
-  prompt += `2. Justifie ton choix de manière pédagogique\n`;
-  prompt += `3. Sois concis mais précis\n\n`;
+  prompt += `1. RÉFLÉCHIS d'abord : analyse chaque option, décortique le problème, identifie les pièges\n`;
+  prompt += `2. Écris ta réflexion complète avant de donner la réponse\n`;
+  prompt += `3. Donne la réponse finale seulement après avoir terminé ton raisonnement\n`;
+  prompt += `4. Sois concis mais précis\n\n`;
   
   prompt += `FORMAT DE RÉPONSE (IMPORTANT - RESPECTE CE FORMAT):\n`;
-  prompt += `REPONSE: [lettre(s) de la/des réponse(s), ex: "a." ou "a. et c."]\n`;
-  prompt += `JUSTIFICATION: [Explication en 2-3 phrases maximum]\n`;
+  prompt += `REFLEXION: [Analyse détaillée de chaque option, décortication du problème, identification des pièges potentiels]\n`;
+  prompt += `REPONSE: [lettre(s) de la/des réponse(s) uniquement, ex: "a." ou "a. et c."]\n`;
   
   return prompt;
 }
@@ -47,16 +48,18 @@ function buildPromptMatch(prompt, questionData) {
   });
   
   prompt += `\nINSTRUCTIONS:\n`;
-  prompt += `1. Associe chaque élément à la catégorie appropriée\n`;
-  prompt += `2. Justifie tes choix de manière pédagogique\n`;
-  prompt += `3. Sois concis mais précis\n\n`;
+  prompt += `1. RÉFLÉCHIS d'abord : analyse chaque élément et chaque catégorie, identifie les liens logiques\n`;
+  prompt += `2. Écris ta réflexion complète avant de donner les associations\n`;
+  prompt += `3. Donne les associations finales seulement après avoir terminé ton raisonnement\n`;
+  prompt += `4. Sois concis mais précis\n\n`;
   
   prompt += `FORMAT DE RÉPONSE (IMPORTANT - RESPECTE CE FORMAT):\n`;
+  prompt += `REFLEXION: [Analyse de chaque élément et catégorie, identification des liens logiques]\n`;
   prompt += `REPONSE:\n`;
   items.forEach((item, index) => {
     prompt += `${index + 1}. ${item.text} → [nom de la catégorie]\n`;
   });
-  prompt += `\nJUSTIFICATION: [Explication brève de tes choix]\n`;
+  prompt += `\n`;
   
   return prompt;
 }
@@ -71,14 +74,14 @@ function buildPromptTrueFalse(prompt, questionData) {
   prompt += `- Faux\n`;
   
   prompt += `\nINSTRUCTIONS:\n`;
-  prompt += `1. Détermine si l'affirmation est vraie ou fausse\n`;
-  prompt += `2. Justifie ta réponse de manière pédagogique\n`;
-  prompt += `3. Sois concis mais précis\n`;
-  prompt += `4. Explique pourquoi c'est vrai ou pourquoi c'est faux\n\n`;
+  prompt += `1. RÉFLÉCHIS d'abord : analyse l'affirmation en détail, identifie les points clés\n`;
+  prompt += `2. Écris ta réflexion complète avant de donner la réponse Vrai/Faux\n`;
+  prompt += `3. Donne la réponse finale seulement après avoir terminé ton raisonnement\n`;
+  prompt += `4. Sois concis mais précis\n\n`;
   
   prompt += `FORMAT DE RÉPONSE (IMPORTANT - RESPECTE CE FORMAT):\n`;
+  prompt += `REFLEXION: [Analyse détaillée de l'affirmation, identification des points clés qui permettent de déterminer si c'est vrai ou faux]\n`;
   prompt += `REPONSE: [Vrai ou Faux]\n`;
-  prompt += `JUSTIFICATION: [Explication en 2-3 phrases maximum]\n`;
   
   return prompt;
 }
@@ -115,7 +118,7 @@ async function callGeminiAPI(prompt, apiKey) {
       }],
       generationConfig: {
         temperature: 0.7,
-        maxOutputTokens: 500,
+        maxOutputTokens: 800,
         topK: 40,
         topP: 0.95
       }
@@ -140,20 +143,20 @@ function parseGeminiResponse(data) {
   try {
     const text = data.candidates[0].content.parts[0].text;
     
-    // Extraire la réponse
-    const reponseMatch = text.match(/REPONSE:\s*(.+?)(?=\n|$)/i);
-    const justificationMatch = text.match(/JUSTIFICATION:\s*(.+?)$/is);
+    // Extraire la réflexion et la réponse
+    const reflexionMatch = text.match(/REFLEXION:\s*(.+?)(?=\nREPONSE:)/is);
+    const reponseMatch = text.match(/REPONSE:\s*(.+?)$/is);
     
     return {
+      reasoning: reflexionMatch ? reflexionMatch[1].trim() : 'Pas de réflexion fournie.',
       answer: reponseMatch ? reponseMatch[1].trim() : text.substring(0, 100),
-      reasoning: justificationMatch ? justificationMatch[1].trim() : 'Pas de justification fournie.',
       rawText: text
     };
   } catch (error) {
     console.error('Parse error:', error);
     return {
+      reasoning: 'Impossible d\'extraire la réflexion',
       answer: 'Erreur de parsing',
-      reasoning: 'Impossible d\'extraire la réponse',
       rawText: JSON.stringify(data)
     };
   }
