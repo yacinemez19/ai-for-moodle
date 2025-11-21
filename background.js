@@ -113,7 +113,7 @@ async function callGeminiAPI(prompt, apiKey) {
     }],
     generationConfig: {
       temperature: 0.7,
-      maxOutputTokens: 500,
+      maxOutputTokens: 2000,
       topK: 40,
       topP: 0.95
     }
@@ -216,7 +216,7 @@ async function handleIndexCourses(message) {
       
       try {
         // Upload du fichier
-        const uploadedFile = await uploadAndIndexFile(apiKey, fileData);
+        const uploadedFile = await uploadAndIndexFile(apiKey, fileData, fileStoreId);
         uploadedFiles.push({
           name: fileData.name,
           uri: uploadedFile.name,
@@ -256,133 +256,70 @@ async function handleIndexCourses(message) {
   }
 }
 
-async function uploadAndIndexFile(apiKey, fileData) {
-  console.log(`[Background] Upload de ${fileData.name} (${fileData.size} bytes)...`);
+async function uploadAndIndexFile(apiKey, fileData, fileStoreId) {
+    console.log(`[Background] Upload de ${fileData.name} (${fileData.size} bytes) vers ${fileStoreId}...`);
   
-  try {
-    // Décoder le base64
+    // 1. Décoder le base64 reçu depuis le front
     const byteCharacters = atob(fileData.data);
     const byteNumbers = new Array(byteCharacters.length);
     for (let i = 0; i < byteCharacters.length; i++) {
       byteNumbers[i] = byteCharacters.charCodeAt(i);
     }
     const byteArray = new Uint8Array(byteNumbers);
-    
-    // ÉTAPE 1 : Initier l'upload resumable
-    // Référence : https://ai.google.dev/gemini-api/docs/file-search#rest
-    console.log('[Background] Étape 1 : Initiation de l\'upload resumable...');
-    
-    const initiateResponse = await fetch(
-      `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: {
-          'X-Goog-Upload-Protocol': 'resumable',
-          'X-Goog-Upload-Command': 'start',
-          'X-Goog-Upload-Header-Content-Length': fileData.size.toString(),
-          'X-Goog-Upload-Header-Content-Type': fileData.mimeType,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          file: {
-            display_name: fileData.name
-          }
-        })
-      }
-    );
-    
-    if (!initiateResponse.ok) {
-      const errorText = await initiateResponse.text();
-      console.error('[Background] Erreur initiation:', errorText);
-      throw new Error(`Erreur initiation upload (${initiateResponse.status})`);
-    }
-    
-    // Récupérer l'URL d'upload depuis le header
-    const uploadUrl = initiateResponse.headers.get('X-Goog-Upload-URL');
-    if (!uploadUrl) {
-      throw new Error('Pas d\'URL d\'upload retournée (header X-Goog-Upload-URL manquant)');
-    }
-    
-    console.log('[Background] ✓ URL d\'upload obtenue');
-    
-    // ÉTAPE 2 : Uploader le contenu
-    console.log('[Background] Étape 2 : Upload du contenu...');
-    
-    const uploadResponse = await fetch(uploadUrl, {
+  
+    // 2. Construire l’URL d’upload (media)
+    const uploadUrl =
+      `https://generativelanguage.googleapis.com/upload/v1beta/` +
+      `${fileStoreId}:uploadToFileSearchStore?key=${apiKey}`;
+  
+    console.log('[Background] URL API uploadToFileSearchStore:', uploadUrl);
+  
+    // 3. Envoyer directement les bytes en body
+    const res = await fetch(uploadUrl, {
       method: 'POST',
       headers: {
-        'Content-Length': byteArray.length.toString(),
-        'X-Goog-Upload-Offset': '0',
-        'X-Goog-Upload-Command': 'upload, finalize'
+        'Content-Type': fileData.mimeType || 'application/pdf'
       },
       body: byteArray
     });
-    
-    if (!uploadResponse.ok) {
-      const errorText = await uploadResponse.text();
-      console.error('[Background] Erreur upload:', errorText);
-      throw new Error(`Erreur upload contenu (${uploadResponse.status})`);
+  
+    const text = await res.text();
+    console.log('[Background] Réponse API uploadToFileSearchStore:', res, 'body:', text);
+  
+    if (!res.ok) {
+      throw new Error(`Erreur uploadToFileSearchStore (${res.status}): ${text}`);
     }
-    
-    const uploadResult = await uploadResponse.json();
-    console.log('[Background] ✓ Fichier uploadé avec succès');
-    
-    const fileName = uploadResult.file.name;
-    let fileState = uploadResult.file.state;
-    
-    console.log(`[Background] État initial : ${fileState}`);
-    
-    // Si déjà ACTIVE, retourner directement
-    if (fileState === 'ACTIVE') {
-      console.log('[Background] ✅ Fichier immédiatement actif !');
-      return uploadResult.file;
-    }
-    
-    // ÉTAPE 3 : Attendre l'indexation (polling)
-    console.log('[Background] Étape 3 : Attente de l\'indexation...');
+  
+    // 4. On reçoit une Operation (long-running)
+    const operation = JSON.parse(text);
+    console.log('[Background] Operation démarrée:', operation.name);
+  
+    // OPTIONNEL : poll jusqu’à ce que l’indexation soit terminée
     let attempts = 0;
-    const maxAttempts = 60; // 2 minutes max
-    
-    while (attempts < maxAttempts && fileState !== 'ACTIVE' && fileState !== 'FAILED') {
-      await sleep(2000); // Attendre 2 secondes entre chaque vérification
-      
-      const statusResponse = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/${fileName}?key=${apiKey}`
+    const maxAttempts = 60; // par ex. 2 minutes si tu mets 2s entre chaque
+  
+    while (!operation.done && attempts < maxAttempts) {
+      await new Promise(r => setTimeout(r, 2000));
+      const statusRes = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/${operation.name}?key=${apiKey}`
       );
-      
-      if (!statusResponse.ok) {
-        const errorText = await statusResponse.text();
-        console.error('[Background] Erreur vérification statut:', errorText);
-        throw new Error(`Erreur vérification statut (${statusResponse.status})`);
+      const statusText = await statusRes.text();
+      if (!statusRes.ok) {
+        throw new Error(`Erreur polling operation (${statusRes.status}): ${statusText}`);
       }
-      
-      const fileStatus = await statusResponse.json();
-      fileState = fileStatus.state;
-      
+      const status = JSON.parse(statusText);
       attempts++;
-      console.log(`[Background] État: ${fileState} (tentative ${attempts}/${maxAttempts})`);
-      
-      if (fileState === 'ACTIVE') {
-        console.log('[Background] ✅ Fichier indexé avec succès !');
-        return fileStatus;
-      }
-      
-      if (fileState === 'FAILED') {
-        throw new Error('Indexation échouée : Gemini n\'a pas pu indexer le fichier');
+      console.log(`[Background] Operation status (tentative ${attempts}):`, status.done);
+      if (status.done) {
+        console.log('[Background] ✅ Indexation terminée pour', fileData.name);
+        return status; // contient la réponse finale
       }
     }
-    
-    // Timeout
-    if (fileState !== 'ACTIVE') {
-      throw new Error(`Timeout : l'indexation prend trop de temps (état: ${fileState})`);
-    }
-    
-  } catch (error) {
-    console.error(`[Background] ❌ Erreur pour ${fileData.name}:`, error);
-    throw error;
+  
+    console.warn('[Background] ⚠️ Operation pas terminée dans le temps imparti');
+    return operation; // au pire tu renvoies l’operation pour info
   }
-}
-
+  
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
