@@ -112,10 +112,10 @@ async function callGeminiAPI(prompt, apiKey) {
       parts: [{ text: prompt }]
     }],
     generationConfig: {
-      temperature: 0.7,
-      maxOutputTokens: 2000,
-      topK: 40,
-      topP: 0.95
+      temperature: 0.1,
+      maxOutputTokens: 5000,
+      topK: 64,
+      topP: 0.25
     }
   };
   
@@ -137,7 +137,7 @@ RÈGLES IMPÉRATIVES :
 FORMAT DE RÉPONSE :
 - Réponds de manière structurée
 - Utilise le format demandé (REPONSE: / JUSTIFICATION:)
-- Reste dans le contexte académique de L2 gestion/économie`
+- Reste dans le contexte académique de L2 droit`
       }]
     };
     
