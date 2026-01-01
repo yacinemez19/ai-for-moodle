@@ -3,115 +3,115 @@
 // ============================================
 
 function extractMultichoiceQuestion(questionDiv) {
-  // Texte de la question
-  const questionText = questionDiv.querySelector('.qtext')?.innerText.trim();
-  if (!questionText) return null;
-  
-  // Type de question
-  const hasCheckbox = questionDiv.querySelector('input[type="checkbox"]') !== null;
-  const type = hasCheckbox ? 'multiple' : 'single';
-  
-  // Options
-  const optionDivs = questionDiv.querySelectorAll('.answer > div[class^="r"]');
-  const options = [];
-  
-  optionDivs.forEach(div => {
-    const letter = div.querySelector('.answernumber')?.innerText.trim();
-    const text = div.querySelector('.flex-fill')?.innerText.trim();
-    if (letter && text) {
-      options.push({ letter, text });
-    }
-  });
-  
-  if (options.length === 0) return null;
-  
-  return { questionText, type: 'multichoice', subtype: type, options };
+    // Texte de la question
+    const questionText = questionDiv.querySelector('.qtext')?.innerText.trim();
+    if (!questionText) return null;
+
+    // Type de question
+    const hasCheckbox = questionDiv.querySelector('input[type="checkbox"]') !== null;
+    const type = hasCheckbox ? 'multiple' : 'single';
+
+    // Options
+    const optionDivs = questionDiv.querySelectorAll('.answer > div[class^="r"]');
+    const options = [];
+
+    optionDivs.forEach(div => {
+        const letter = div.querySelector('.answernumber')?.innerText.trim();
+        const text = div.querySelector('.flex-fill')?.innerText.trim();
+        if (letter && text) {
+            options.push({ letter, text });
+        }
+    });
+
+    if (options.length === 0) return null;
+
+    return { questionText, type: 'multichoice', subtype: type, options };
 }
 
 function extractMatchQuestion(questionDiv) {
-  // Texte de la question
-  const questionText = questionDiv.querySelector('.qtext')?.innerText.trim();
-  if (!questionText) return null;
-  
-  // Extraire les paires à associer
-  const rows = questionDiv.querySelectorAll('.answer tbody tr');
-  const items = [];
-  const choices = [];
-  
-  rows.forEach((row, index) => {
-    // Texte de l'élément à gauche
-    const itemText = row.querySelector('.text')?.innerText.trim();
-    if (!itemText) return;
-    
-    // Menu déroulant avec les options
-    const select = row.querySelector('select');
-    if (!select) return;
-    
-    // Extraire les options du menu déroulant (sauf "Choisir…")
-    if (index === 0) {
-      const options = select.querySelectorAll('option');
-      options.forEach(opt => {
-        const value = opt.value;
-        const text = opt.textContent.trim();
-        if (value !== '0' && text !== 'Choisir…') {
-          choices.push({ value, text });
+    // Texte de la question
+    const questionText = questionDiv.querySelector('.qtext')?.innerText.trim();
+    if (!questionText) return null;
+
+    // Extraire les paires à associer
+    const rows = questionDiv.querySelectorAll('.answer tbody tr');
+    const items = [];
+    const choices = [];
+
+    rows.forEach((row, index) => {
+        // Texte de l'élément à gauche
+        const itemText = row.querySelector('.text')?.innerText.trim();
+        if (!itemText) return;
+
+        // Menu déroulant avec les options
+        const select = row.querySelector('select');
+        if (!select) return;
+
+        // Extraire les options du menu déroulant (sauf "Choisir…")
+        if (index === 0) {
+            const options = select.querySelectorAll('option');
+            options.forEach(opt => {
+                const value = opt.value;
+                const text = opt.textContent.trim();
+                if (value !== '0' && text !== 'Choisir…') {
+                    choices.push({ value, text });
+                }
+            });
         }
-      });
-    }
-    
-    items.push({
-      text: itemText,
-      selectName: select.name
+
+        items.push({
+            text: itemText,
+            selectName: select.name
+        });
     });
-  });
-  
-  if (items.length === 0 || choices.length === 0) return null;
-  
-  return { 
-    questionText, 
-    type: 'match', 
-    items,
-    choices
-  };
+
+    if (items.length === 0 || choices.length === 0) return null;
+
+    return {
+        questionText,
+        type: 'match',
+        items,
+        choices
+    };
 }
 
 function extractTrueFalseQuestion(questionDiv) {
-  // Texte de la question
-  const questionText = questionDiv.querySelector('.qtext')?.innerText.trim();
-  if (!questionText) return null;
-  
-  // Vérifier la présence des deux options Vrai/Faux
-  const trueOption = questionDiv.querySelector('input[id*="answertrue"]');
-  const falseOption = questionDiv.querySelector('input[id*="answerfalse"]');
-  
-  if (!trueOption || !falseOption) return null;
-  
-  return { 
-    questionText, 
-    type: 'truefalse'
-  };
+    // Texte de la question
+    const questionText = questionDiv.querySelector('.qtext')?.innerText.trim();
+    if (!questionText) return null;
+
+    // Vérifier la présence des deux options Vrai/Faux
+    const trueOption = questionDiv.querySelector('input[id*="answertrue"]');
+    const falseOption = questionDiv.querySelector('input[id*="answerfalse"]');
+
+    if (!trueOption || !falseOption) return null;
+
+    return {
+        questionText,
+        type: 'truefalse'
+    };
 }
 
 function extractQuestion() {
-  // Essayer de détecter une question multichoice
-  let questionDiv = document.querySelector('.que.multichoice');
-  if (questionDiv) {
-    return extractMultichoiceQuestion(questionDiv);
-  }
-  
-  // Essayer de détecter une question match
-  questionDiv = document.querySelector('.que.match');
-  if (questionDiv) {
-    return extractMatchQuestion(questionDiv);
-  }
-  
-  // Essayer de détecter une question vrai/faux
-  questionDiv = document.querySelector('.que.truefalse');
-  if (questionDiv) {
-    return extractTrueFalseQuestion(questionDiv);
-  }
-  
-  return null;
+    // Essayer de détecter une question multichoice
+    let questionDiv = document.querySelector('.que.multichoice');
+    if (questionDiv) {
+        return extractMultichoiceQuestion(questionDiv);
+    }
+
+    // Essayer de détecter une question match
+    questionDiv = document.querySelector('.que.match');
+    if (questionDiv) {
+        return extractMatchQuestion(questionDiv);
+    }
+
+    // Essayer de détecter une question vrai/faux
+    questionDiv = document.querySelector('.que.truefalse');
+    if (questionDiv) {
+        return extractTrueFalseQuestion(questionDiv);
+    }
+
+    return null;
 }
 
 // ============================================
@@ -119,21 +119,21 @@ function extractQuestion() {
 // ============================================
 
 function setupKeyboardShortcut() {
-  // Écouter le raccourci Ctrl+K (ou Cmd+K sur Mac)
-  document.addEventListener('keydown', (event) => {
-    // Vérifier si Ctrl+K (ou Cmd+K sur Mac) est pressé
-    if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
-      // Empêcher le comportement par défaut du navigateur
-      event.preventDefault();
-      
-      // Vérifier qu'on est bien sur une page de quiz
-      if (document.querySelector('.que.multichoice') || 
-          document.querySelector('.que.match') || 
-          document.querySelector('.que.truefalse')) {
-        handleAnalyze();
-      }
-    }
-  });
+    // Écouter le raccourci Ctrl+K (ou Cmd+K sur Mac)
+    document.addEventListener('keydown', (event) => {
+        // Vérifier si Ctrl+K (ou Cmd+K sur Mac) est pressé
+        if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+            // Empêcher le comportement par défaut du navigateur
+            event.preventDefault();
+
+            // Vérifier qu'on est bien sur une page de quiz
+            if (document.querySelector('.que.multichoice') ||
+                document.querySelector('.que.match') ||
+                document.querySelector('.que.truefalse')) {
+                handleAnalyze();
+            }
+        }
+    });
 }
 
 // ============================================
@@ -141,85 +141,180 @@ function setupKeyboardShortcut() {
 // ============================================
 
 async function handleAnalyze() {
-  // Afficher un indicateur de chargement
-  showLoadingIndicator();
-  
-  try {
-    // Extraire la question
-    const questionData = extractQuestion();
-    
-    if (!questionData) {
-      hideLoadingIndicator();
-      alert('❌ Aucune question détectée sur cette page');
-      return;
-    }
-    
-    // Envoyer au background script
-    chrome.runtime.sendMessage(
-      { action: 'analyze', data: questionData },
-      (response) => {
-        hideLoadingIndicator();
-        if (response.success) {
-          showModal(questionData, response.data);
-        } else {
-          alert(`❌ Erreur: ${response.error}`);
+    // Afficher un indicateur de chargement
+    showLoadingIndicator();
+
+    try {
+        // Extraire la question
+        const questionData = extractQuestion();
+
+        if (!questionData) {
+            hideLoadingIndicator();
+            alert('❌ Aucune question détectée sur cette page');
+            return;
         }
-      }
-    );
-    
-  } catch (error) {
-    hideLoadingIndicator();
-    alert(`❌ Erreur: ${error.message}`);
-  }
+
+        // Récupérer le mode d'affichage (examen ou normal)
+        const storage = await chrome.storage.local.get(['examMode']);
+        const examMode = storage.examMode || false;
+
+        // Envoyer au background script
+        chrome.runtime.sendMessage(
+            { action: 'analyze', data: questionData },
+            (response) => {
+                hideLoadingIndicator();
+                if (response.success) {
+                    if (examMode) {
+                        // Mode examen : mettre en évidence la bonne réponse
+                        highlightCorrectAnswer(questionData, response.data);
+                    } else {
+                        // Mode normal : afficher le modal
+                        showModal(questionData, response.data);
+                    }
+                } else {
+                    alert(`❌ Erreur: ${response.error}`);
+                }
+            }
+        );
+
+    } catch (error) {
+        hideLoadingIndicator();
+        alert(`❌ Erreur: ${error.message}`);
+    }
 }
 
 function showLoadingIndicator() {
-  // Supprimer l'indicateur existant s'il y en a un
-  hideLoadingIndicator();
-  
-  const loader = document.createElement('div');
-  loader.id = 'gemini-loading-indicator';
-  loader.innerHTML = '⏳ Analyse en cours...';
-  loader.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 12px 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
-    z-index: 9999;
-    font-size: 16px;
-    font-weight: 500;
-    animation: fadeIn 0.3s ease-in;
-  `;
-  
-  document.body.appendChild(loader);
+    // Mettre en italique le texte de la question pendant le chargement
+    const qtext = document.querySelector('.qtext');
+    if (qtext) {
+        qtext.dataset.originalStyle = qtext.style.fontStyle || '';
+        qtext.style.fontStyle = 'italic';
+    }
 }
 
 function hideLoadingIndicator() {
-  const loader = document.getElementById('gemini-loading-indicator');
-  if (loader) {
-    loader.remove();
-  }
+    // Remettre le style normal du texte de la question
+    const qtext = document.querySelector('.qtext');
+    if (qtext) {
+        qtext.style.fontStyle = qtext.dataset.originalStyle || '';
+    }
 }
 
 // ============================================
-// 4. MODAL DE RÉPONSE
+// 4. MODE EXAMEN - MISE EN ÉVIDENCE
+// ============================================
+
+function highlightCorrectAnswer(questionData, responseData) {
+    // Debug : afficher la réponse brute dans la console
+    console.log('[Exam Mode] Réponse brute:', responseData);
+    console.log('[Exam Mode] Raw text:', responseData.rawText);
+
+    const answer = responseData.answer.toLowerCase();
+
+    // QCM : mise en gras de la bonne réponse
+    if (questionData.type === 'multichoice') {
+        // Extraire la/les lettre(s) de la réponse (ex: "a.", "b.", "a. et c.")
+        const letterMatches = answer.match(/[a-z]\./g);
+
+        if (!letterMatches) {
+            console.warn('[Exam Mode] Impossible d\'extraire la lettre de réponse:', answer);
+            return;
+        }
+
+        // Chercher l'option correspondante dans le DOM
+        const questionDiv = document.querySelector('.que.multichoice');
+        if (!questionDiv) return;
+
+        const optionDivs = questionDiv.querySelectorAll('.answer > div[class^="r"]');
+
+        // Pour chaque lettre trouvée
+        letterMatches.forEach(letterWithDot => {
+            const letter = letterWithDot.replace('.', '');
+
+            optionDivs.forEach(div => {
+                const answerNumber = div.querySelector('.answernumber');
+                if (answerNumber) {
+                    const optionLetter = answerNumber.innerText.trim().toLowerCase().replace('.', '');
+
+                    if (optionLetter === letter) {
+                        // Mettre en gras le texte de la réponse
+                        const textContainer = div.querySelector('.flex-fill, .ms-1, [data-region="answer-label"]');
+                        if (textContainer) {
+                            textContainer.style.fontWeight = '700';
+                        }
+                    }
+                }
+            });
+        });
+    }
+    // Vrai/Faux : mise en gras de la bonne réponse
+    else if (questionData.type === 'truefalse') {
+        const questionDiv = document.querySelector('.que.truefalse');
+        if (!questionDiv) return;
+
+        const isTrue = answer.includes('vrai') || answer.includes('true');
+        const isFalse = answer.includes('faux') || answer.includes('false');
+
+        if (isTrue) {
+            const trueLabel = questionDiv.querySelector('label[for*="answertrue"]');
+            if (trueLabel) {
+                trueLabel.style.fontWeight = '700';
+            }
+        } else if (isFalse) {
+            const falseLabel = questionDiv.querySelector('label[for*="answerfalse"]');
+            if (falseLabel) {
+                falseLabel.style.fontWeight = '700';
+            }
+        }
+    }
+    // Autres types : affichage ligne par ligne (utiliser rawText pour la réponse complète)
+    else {
+        showResponseLineByLine(responseData.rawText || responseData.answer);
+    }
+}
+
+function showResponseLineByLine(text) {
+    // Séparer le texte en lignes (enlever les lignes vides)
+    const lines = text.split('\n').filter(line => line.trim() !== '');
+
+    if (lines.length === 0) {
+        alert('Aucune réponse');
+        return;
+    }
+
+    // Afficher chaque ligne une par une
+    for (let i = 0; i < lines.length; i++) {
+        const isLastLine = (i === lines.length - 1);
+        const lineNumber = `[${i + 1}/${lines.length}]`;
+
+        if (isLastLine) {
+            // Dernière ligne : simple alert
+            alert(`${lineNumber} ${lines[i]}`);
+        } else {
+            // Pas la dernière : confirm pour continuer ou quitter
+            const continueReading = confirm(`${lineNumber} ${lines[i]}`);
+            if (!continueReading) {
+                break; // L'utilisateur a cliqué sur "Annuler"
+            }
+        }
+    }
+}
+
+// ============================================
+// 5. MODAL DE RÉPONSE
 // ============================================
 
 function showModal(questionData, responseData) {
-  // Supprimer le modal existant s'il y en a un
-  const existingModal = document.getElementById('gemini-modal');
-  if (existingModal) {
-    existingModal.remove();
-  }
-  
-  // Créer le modal
-  const modal = document.createElement('div');
-  modal.id = 'gemini-modal';
-  modal.style.cssText = `
+    // Supprimer le modal existant s'il y en a un
+    const existingModal = document.getElementById('gemini-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+
+    // Créer le modal
+    const modal = document.createElement('div');
+    modal.id = 'gemini-modal';
+    modal.style.cssText = `
     position: fixed;
     top: 0;
     left: 0;
@@ -231,12 +326,12 @@ function showModal(questionData, responseData) {
     justify-content: center;
     z-index: 10000;
   `;
-  
-  // Générer le HTML en fonction du type de question
-  let optionsHTML = '';
-  
-  if (questionData.type === 'multichoice') {
-    optionsHTML = `
+
+    // Générer le HTML en fonction du type de question
+    let optionsHTML = '';
+
+    if (questionData.type === 'multichoice') {
+        optionsHTML = `
       <div style="margin: 16px 0;">
         <h3 style="color: #333;">📋 Options:</h3>
         <ul style="color: #555;">
@@ -244,8 +339,8 @@ function showModal(questionData, responseData) {
         </ul>
       </div>
     `;
-  } else if (questionData.type === 'match') {
-    optionsHTML = `
+    } else if (questionData.type === 'match') {
+        optionsHTML = `
       <div style="margin: 16px 0;">
         <h3 style="color: #333;">📋 Éléments à associer:</h3>
         <ul style="color: #555;">
@@ -260,8 +355,8 @@ function showModal(questionData, responseData) {
         </ul>
       </div>
     `;
-  } else if (questionData.type === 'truefalse') {
-    optionsHTML = `
+    } else if (questionData.type === 'truefalse') {
+        optionsHTML = `
       <div style="margin: 16px 0;">
         <h3 style="color: #333;">📋 Options:</h3>
         <ul style="color: #555;">
@@ -270,9 +365,9 @@ function showModal(questionData, responseData) {
         </ul>
       </div>
     `;
-  }
-  
-  modal.innerHTML = `
+    }
+
+    modal.innerHTML = `
     <div style="
       background: white;
       border-radius: 12px;
@@ -340,52 +435,52 @@ function showModal(questionData, responseData) {
       </button>
     </div>
   `;
-  
-  // Ajouter au DOM
-  document.body.appendChild(modal);
-  
-  // Event listeners
-  document.getElementById('close-modal-btn').addEventListener('click', () => {
-    modal.remove();
-  });
-  
-  // Fermer au clic sur le backdrop
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) {
-      modal.remove();
-    }
-  });
+
+    // Ajouter au DOM
+    document.body.appendChild(modal);
+
+    // Event listeners
+    document.getElementById('close-modal-btn').addEventListener('click', () => {
+        modal.remove();
+    });
+
+    // Fermer au clic sur le backdrop
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
 }
 
 // ============================================
-// 5. GESTIONNAIRE DE MESSAGES DU BACKGROUND
+// 6. GESTIONNAIRE DE MESSAGES DU BACKGROUND
 // ============================================
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === 'trigger-analyze') {
-    handleAnalyze();
-  }
+    if (message.action === 'trigger-analyze') {
+        handleAnalyze();
+    }
 });
 
 // ============================================
-// 6. INITIALISATION
+// 7. INITIALISATION
 // ============================================
 
 // Activer le raccourci clavier sur toutes les pages
 setupKeyboardShortcut();
 
 // Afficher une notification si on est sur une page de quiz
-if (document.querySelector('.que.multichoice') || 
-    document.querySelector('.que.match') || 
+if (document.querySelector('.que.multichoice') ||
+    document.querySelector('.que.match') ||
     document.querySelector('.que.truefalse')) {
-  showShortcutHint();
+    showShortcutHint();
 }
 
 function showShortcutHint() {
-  const hint = document.createElement('div');
-  hint.id = 'gemini-shortcut-hint';
-  hint.innerHTML = '💡 Appuyez sur <kbd>Ctrl+K</kbd> pour analyser la question';
-  hint.style.cssText = `
+    const hint = document.createElement('div');
+    hint.id = 'gemini-shortcut-hint';
+    hint.innerHTML = '💡 Appuyez sur <kbd>Ctrl+K</kbd> pour analyser la question';
+    hint.style.cssText = `
     position: fixed;
     bottom: 20px;
     right: 20px;
@@ -398,12 +493,12 @@ function showShortcutHint() {
     font-size: 14px;
     animation: fadeInOut 4s ease-in-out;
   `;
-  
-  document.body.appendChild(hint);
-  
-  // Supprimer après 4 secondes
-  setTimeout(() => {
-    hint.remove();
-  }, 4000);
+
+    document.body.appendChild(hint);
+
+    // Supprimer après 4 secondes
+    setTimeout(() => {
+        hint.remove();
+    }, 4000);
 }
 

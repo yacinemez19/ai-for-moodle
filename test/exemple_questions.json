@@ -1,0 +1,53 @@
+[
+  {
+    "question": "L'infraction est :",
+    "possibilites": [
+      { "id": "a", "texte": "le fait spéculateur de la responsabilité pénale" },
+      { "id": "b", "texte": "le fait usurpateur de la responsabilité pénale" },
+      { "id": "c", "texte": "le fait générateur de la responsabilité pénale" },
+      { "id": "d", "texte": "le fait moteur de la responsabilité pénale" }
+    ],
+    "reponse": "c"
+  },
+  {
+    "question": "Le droit pénal français réprime l'infraction tentée dès lors :",
+    "possibilites": [
+      { "id": "a", "texte": "qu'ils ont accompli des actes qui tendent directement et immédiatement à l'infraction" },
+      { "id": "b", "texte": "que ces actes caractérisent une intention irrévocable de commettre l'infraction" },
+      { "id": "c", "texte": "que ces actes ont un caractère équivoque" },
+      { "id": "d", "texte": "que les agents aient été interrompus involontairement" }
+    ],
+    "reponse": ["a", "b", "d"]
+  },
+  {
+    "question": "La complicité suppose :",
+    "possibilites": [
+      { "id": "a", "texte": "une infraction principale punissable" },
+      { "id": "b", "texte": "un acte positif de complicité" },
+      { "id": "c", "texte": "une intention dolosive" },
+      { "id": "d", "texte": "une abstention volontaire" }
+    ],
+    "reponse": ["a", "b", "c"]
+  },
+  {
+    "question": "Le principe de légalité criminelle signifie :",
+    "possibilites": [
+      { "id": "a", "texte": "qu'il n'y a pas de crime sans loi qui le définisse" },
+      { "id": "b", "texte": "que la loi pénale est d'interprétation stricte" },
+      { "id": "c", "texte": "que le juge peut créer des infractions" },
+      { "id": "d", "texte": "que la coutume peut définir des infractions" }
+    ],
+    "reponse": ["a", "b"]
+  },
+  {
+    "question": "La responsabilité pénale suppose :",
+    "possibilites": [
+      { "id": "a", "texte": "un élément matériel" },
+      { "id": "b", "texte": "un élément moral" },
+      { "id": "c", "texte": "un élément légal" },
+      { "id": "d", "texte": "un élément économique" }
+    ],
+    "reponse": ["a", "b", "c"]
+  }
+]
+
