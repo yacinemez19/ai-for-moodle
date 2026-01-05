@@ -101,7 +101,7 @@ function buildPrompt(questionData) {
 // ============================================
 
 async function callGeminiAPI(prompt, apiKey) {
-    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent';
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent';
 
     // Récupérer la configuration RAG
     const storage = await chrome.storage.local.get(['fileStoreId', 'fileStoreStatus']);
