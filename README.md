@@ -9,7 +9,7 @@ Extension Chrome qui utilise Gemini AI pour aider à répondre aux questions QCM
 - ✅ Support des questions à choix multiples (multichoice)
 - ✅ Support des questions d'association/correspondance (match)
 - ✅ Support des questions vrai/faux (truefalse)
-- ✅ Analyse par Gemini 2.0 Flash Exp
+- ✅ Analyse par Gemini 3.0 flash
 - ✅ **RAG (Retrieval-Augmented Generation)** : Utilisez vos propres cours PDF/TXT/MD
 - ✅ **Page de test intégrée** : Testez votre configuration RAG sans aller sur Moodle
 - ✅ Affichage de la réponse suggérée avec justification
@@ -168,7 +168,7 @@ Pour modifier l'extension :
 
 ## 📄 Licence
 
-Ce projet est un MVP éducatif. Utilisez-le de manière responsable et éthique.
+Ce projet est un MVP éducatif. Utilisez-le de manière responsable et éthique, à ne surtout pas utiliser pendant un controle ou un examen officiel.
 
 ## 🤝 Contribution
 
@@ -176,10 +176,6 @@ Les contributions sont les bienvenues ! N'hésitez pas à :
 - Signaler des bugs
 - Proposer des améliorations
 - Soumettre des pull requests
-
-## 📧 Support
-
-Pour toute question ou problème, consultez d'abord ce README et le fichier DEVBOOK_MVP.md pour plus de détails techniques.
 
 ---
 

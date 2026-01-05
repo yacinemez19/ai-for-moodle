@@ -64,6 +64,8 @@ Un mode **discret** qui modifie directement la page :
 | **Vrai/Faux** | La bonne réponse passe en **gras** |
 | **Autres** (association, etc.) | Affichage ligne par ligne via des popups |
 
+NB : En mode examen, la question est mise en italique pour signaler qu'elle est en cours de traitement.
+
 #### Activer le Mode Examen
 
 1. Cliquez sur l'icône de l'extension
@@ -165,16 +167,7 @@ Testez votre configuration sans aller sur Moodle :
 > - Les réponses générées par l'IA peuvent contenir des erreurs
 > - **Vérifiez toujours les réponses** avant de les utiliser
 > - L'utilisation pendant des examens officiels peut être considérée comme de la triche
-> - Utilisez cet outil de manière **responsable et éthique**
-
----
-
-## 📞 Support
-
-Pour toute question ou problème :
-1. Consultez ce guide
-2. Vérifiez la section Dépannage
-3. Consultez la console développeur (`F12` → Console) pour les erreurs techniques
+> - Utilisez cet outil de manière **responsable et éthique**, à ne surtout pas utiliser pendant un controle ou un examen officiel.
 
 ---
 

@@ -84,7 +84,7 @@ function buildPromptTrueFalse(prompt, questionData) {
 }
 
 function buildPrompt(questionData) {
-    prompt = `Tu es un expert en économie et en gestion d'entreprise. Tu réponds toujours de manière concise et précise. Et tu fais bien attention à donner des réponses correctes.\n`;
+    prompt = `Tu es un expert en droit. Tu réponds toujours de manière concise et précise. Et tu fais bien attention à donner des réponses correctes.\n`;
     if (questionData.type === 'multichoice') {
         return buildPromptMultichoice(prompt, questionData);
     } else if (questionData.type === 'match') {
@@ -101,7 +101,7 @@ function buildPrompt(questionData) {
 // ============================================
 
 async function callGeminiAPI(prompt, apiKey) {
-    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent';
 
     // Récupérer la configuration RAG
     const storage = await chrome.storage.local.get(['fileStoreId', 'fileStoreStatus']);

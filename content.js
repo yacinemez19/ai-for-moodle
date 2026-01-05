@@ -473,7 +473,7 @@ setupKeyboardShortcut();
 if (document.querySelector('.que.multichoice') ||
     document.querySelector('.que.match') ||
     document.querySelector('.que.truefalse')) {
-    showShortcutHint();
+    //showShortcutHint();
 }
 
 function showShortcutHint() {
