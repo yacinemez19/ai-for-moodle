@@ -51,7 +51,7 @@ Pour que l'extension utilise **vos propres cours** au lieu de la connaissance g�
    ```
 4. Une fois l'indexation terminée, importez le fichier `rag_config.json` généré via l'extension
 
-📚 Consultez le [Guide RAG détaillé](./GUIDE_RAG.md) pour plus d'informations.
+📚 Consultez le [Guide RAG détaillé](./USER_GUIDE.md) pour plus d'informations.
 
 ### 5. (Optionnel) Utiliser la page de test
 
@@ -60,8 +60,6 @@ Pour tester votre configuration RAG sans aller sur Moodle :
 1. Ouvrez le popup de l'extension
 2. Cliquez sur **"🧪 Ouvrir la page de test RAG"**
 3. Testez avec les questions prédéfinies ou créez les vôtres
-
-📚 Consultez le [Guide de la page de test](./GUIDE_PAGE_TEST.md) pour plus d'informations.
 
 ## 📖 Utilisation
 
