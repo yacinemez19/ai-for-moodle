@@ -92,9 +92,16 @@ function extractTrueFalseQuestion(questionDiv) {
     };
 }
 
+// Helper pour trouver une question multichoice (standard ou multichoiceset)
+function findMultichoiceQuestion() {
+    // .que.multichoice = standard (choix unique ou multiples, distingué par checkbox/radio)
+    // .que.multichoiceset = plugin "All-or-Nothing Multiple Choice" (toujours multiples)
+    return document.querySelector('.que.multichoice') || document.querySelector('.que.multichoiceset');
+}
+
 function extractQuestion() {
-    // Essayer de détecter une question multichoice
-    let questionDiv = document.querySelector('.que.multichoice');
+    // Essayer de détecter une question multichoice (standard ou multichoiceset)
+    let questionDiv = findMultichoiceQuestion();
     if (questionDiv) {
         return extractMultichoiceQuestion(questionDiv);
     }
@@ -127,7 +134,7 @@ function setupKeyboardShortcut() {
             event.preventDefault();
 
             // Vérifier qu'on est bien sur une page de quiz
-            if (document.querySelector('.que.multichoice') ||
+            if (findMultichoiceQuestion() ||
                 document.querySelector('.que.match') ||
                 document.querySelector('.que.truefalse')) {
                 handleAnalyze();
@@ -221,8 +228,8 @@ function highlightCorrectAnswer(questionData, responseData) {
             return;
         }
 
-        // Chercher l'option correspondante dans le DOM
-        const questionDiv = document.querySelector('.que.multichoice');
+        // Chercher l'option correspondante dans le DOM (standard ou multichoiceset)
+        const questionDiv = findMultichoiceQuestion();
         if (!questionDiv) return;
 
         const optionDivs = questionDiv.querySelectorAll('.answer > div[class^="r"]');
@@ -367,6 +374,31 @@ function showModal(questionData, responseData) {
     `;
     }
 
+    // Générer le HTML des sources (si disponibles)
+    let sourcesHTML = '';
+    if (responseData.sources && responseData.sources.length > 0) {
+        sourcesHTML = `
+      <div style="margin: 16px 0;">
+        <h3 style="color: #333;">📚 Sources utilisées:</h3>
+        <div style="
+          background: #f0f9ff;
+          padding: 12px;
+          border-radius: 8px;
+          border-left: 4px solid #3b82f6;
+        ">
+          <ul style="margin: 0; padding-left: 20px; color: #1e40af;">
+            ${responseData.sources.map(source => `
+              <li style="margin-bottom: 8px;">
+                <strong>${source.title || 'Document'}</strong>
+                ${source.text ? `<br><span style="font-size: 0.85em; color: #64748b;">"${source.text.substring(0, 150)}${source.text.length > 150 ? '...' : ''}"</span>` : ''}
+              </li>
+            `).join('')}
+          </ul>
+        </div>
+      </div>
+    `;
+    }
+
     modal.innerHTML = `
     <div style="
       background: white;
@@ -407,6 +439,8 @@ function showModal(questionData, responseData) {
         <h3 style="color: #333;">💡 Justification:</h3>
         <p style="color: #555; line-height: 1.6;">${responseData.reasoning}</p>
       </div>
+      
+      ${sourcesHTML}
       
       <div style="
         background: #fef3c7;
@@ -470,7 +504,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 setupKeyboardShortcut();
 
 // Afficher une notification si on est sur une page de quiz
-if (document.querySelector('.que.multichoice') ||
+if (findMultichoiceQuestion() ||
     document.querySelector('.que.match') ||
     document.querySelector('.que.truefalse')) {
     //showShortcutHint();

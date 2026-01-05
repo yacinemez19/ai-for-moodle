@@ -18,6 +18,7 @@ async function loadConfiguration() {
     const result = await chrome.storage.local.get([
         'apiKey',
         'examMode',
+        'thinkingLevel',
         'fileStoreId',
         'fileStoreStatus',
         'fileStoreFiles',
@@ -31,6 +32,9 @@ async function loadConfiguration() {
 
     // Charger le mode examen
     updateExamModeInterface(result.examMode || false);
+
+    // Charger le niveau de réflexion
+    updateThinkingLevelInterface(result.thinkingLevel || 'medium');
 
     // Mettre à jour l'interface RAG
     updateRAGInterface(result);
@@ -126,6 +130,38 @@ async function handleExamModeToggle() {
 }
 
 // ============================================
+// GESTION DU NIVEAU DE RÉFLEXION
+// ============================================
+
+const thinkingLevelDescriptions = {
+    'minimal': '⚡ Ultra rapide, quasiment pas de réflexion',
+    'low': '🚀 Rapide avec une réflexion légère',
+    'medium': '⚖️ Équilibre entre vitesse et réflexion (recommandé)',
+    'high': '🧠 Réflexion maximale pour les questions complexes'
+};
+
+function updateThinkingLevelInterface(thinkingLevel) {
+    const select = document.getElementById('thinking-level-select');
+    const info = document.getElementById('thinking-level-info');
+
+    select.value = thinkingLevel;
+    info.innerHTML = thinkingLevelDescriptions[thinkingLevel] || thinkingLevelDescriptions['high'];
+}
+
+async function handleThinkingLevelChange() {
+    const select = document.getElementById('thinking-level-select');
+    const thinkingLevel = select.value;
+
+    try {
+        await chrome.storage.local.set({ thinkingLevel });
+        updateThinkingLevelInterface(thinkingLevel);
+        showStatus(`✅ Niveau de réflexion : ${thinkingLevel}`, 'success');
+    } catch (error) {
+        showStatus(`❌ Erreur : ${error.message}`, 'error');
+    }
+}
+
+// ============================================
 // GESTION DES ÉVÉNEMENTS
 // ============================================
 
@@ -155,6 +191,9 @@ function setupEventListeners() {
 
     // Toggle du mode examen
     document.getElementById('exam-mode-toggle').addEventListener('change', handleExamModeToggle);
+
+    // Sélecteur de niveau de réflexion
+    document.getElementById('thinking-level-select').addEventListener('change', handleThinkingLevelChange);
 }
 
 // ============================================

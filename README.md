@@ -140,7 +140,7 @@ extension_chat/
 
 ### Le raccourci clavier ne fonctionne pas
 - Vérifiez que vous êtes sur une page contenant une question supportée :
-  - QCM (`.que.multichoice`)
+  - QCM (`.que.multichoice` ou `.que.multichoiceset`)
   - Association (`.que.match`)
   - Vrai/Faux (`.que.truefalse`)
 - Rechargez la page

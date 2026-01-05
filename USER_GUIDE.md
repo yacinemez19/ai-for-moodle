@@ -74,6 +74,29 @@ NB : En mode examen, la question est mise en italique pour signaler qu'elle est 
 
 ---
 
+## 🧠 Niveau de Réflexion
+
+L'extension vous permet de contrôler la **profondeur de raisonnement** de l'IA Gemini.
+
+### Niveaux disponibles
+
+| Niveau | Description | Recommandé pour |
+|--------|-------------|-----------------|
+| ⚡ **Minimal** | Ultra rapide, quasiment pas de réflexion | Questions très simples |
+| 🚀 **Low** | Rapide avec réflexion légère | Quiz de révision rapide |
+| ⚖️ **Medium** | Équilibre vitesse / qualité **(par défaut)** | Usage courant |
+| 🧠 **High** | Réflexion maximale | Questions très complexes |
+
+> 💡 **Conseil** : Le niveau **Medium** est recommandé pour un bon équilibre. Passez à **High** pour des questions particulièrement complexes.
+
+### Changer le niveau de réflexion
+
+1. Cliquez sur l'icône de l'extension
+2. Dans la section **🧠 Niveau de Réflexion**, sélectionnez le niveau souhaité
+3. Le changement est immédiat et sauvegardé automatiquement
+
+---
+
 ## 📚 Utiliser vos propres cours (RAG)
 
 Vous pouvez indexer vos cours pour que l'IA réponde en se basant sur **vos documents** plutôt que sur ses connaissances générales.

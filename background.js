@@ -103,8 +103,11 @@ function buildPrompt(questionData) {
 async function callGeminiAPI(prompt, apiKey) {
     const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent';
 
-    // Récupérer la configuration RAG
-    const storage = await chrome.storage.local.get(['fileStoreId', 'fileStoreStatus']);
+    // Récupérer la configuration RAG et le niveau de réflexion
+    const storage = await chrome.storage.local.get(['fileStoreId', 'fileStoreStatus', 'thinkingLevel']);
+    const thinkingLevel = storage.thinkingLevel || 'medium'; // Défaut: medium
+
+    console.log('[Background] Niveau de réflexion:', thinkingLevel);
 
     // Construire le body de la requête
     const body = {
@@ -115,7 +118,10 @@ async function callGeminiAPI(prompt, apiKey) {
             temperature: 0.1,
             maxOutputTokens: 5000,
             topK: 64,
-            topP: 0.25
+            topP: 0.25,
+            thinkingConfig: {
+                thinkingLevel: thinkingLevel
+            }
         }
     };
 
@@ -336,17 +342,66 @@ function parseGeminiResponse(data) {
         const reponseMatch = text.match(/REPONSE:\s*(.+?)(?=\n|$)/i);
         const justificationMatch = text.match(/JUSTIFICATION:\s*(.+?)$/is);
 
+        // Extraire les citations (grounding metadata) pour le RAG
+        let sources = [];
+        const groundingMetadata = data.candidates[0].groundingMetadata;
+
+        if (groundingMetadata) {
+            console.log('[Background] Grounding metadata:', JSON.stringify(groundingMetadata, null, 2));
+
+            // Extraire les chunks de recherche (fichiers sources)
+            if (groundingMetadata.groundingChunks) {
+                sources = groundingMetadata.groundingChunks.map(chunk => {
+                    if (chunk.retrievedContext) {
+                        return {
+                            uri: chunk.retrievedContext.uri || '',
+                            title: chunk.retrievedContext.title || 'Document',
+                            text: chunk.retrievedContext.text || ''
+                        };
+                    }
+                    return null;
+                }).filter(Boolean);
+            }
+
+            // Ou via groundingSupports (autre format possible)
+            if (groundingMetadata.groundingSupports && sources.length === 0) {
+                groundingMetadata.groundingSupports.forEach(support => {
+                    if (support.groundingChunkIndices) {
+                        support.groundingChunkIndices.forEach(index => {
+                            const chunk = groundingMetadata.groundingChunks?.[index];
+                            if (chunk?.retrievedContext) {
+                                sources.push({
+                                    uri: chunk.retrievedContext.uri || '',
+                                    title: chunk.retrievedContext.title || 'Document',
+                                    text: chunk.retrievedContext.text || ''
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+        }
+
+        // Dédupliquer les sources par URI
+        const uniqueSources = sources.filter((source, index, self) =>
+            index === self.findIndex(s => s.uri === source.uri)
+        );
+
+        console.log('[Background] Sources extraites:', uniqueSources);
+
         return {
             answer: reponseMatch ? reponseMatch[1].trim() : text.substring(0, 100),
             reasoning: justificationMatch ? justificationMatch[1].trim() : 'Pas de justification fournie.',
-            rawText: text
+            rawText: text,
+            sources: uniqueSources
         };
     } catch (error) {
         console.error('Parse error:', error);
         return {
             answer: 'Erreur de parsing',
             reasoning: 'Impossible d\'extraire la réponse',
-            rawText: JSON.stringify(data)
+            rawText: JSON.stringify(data),
+            sources: []
         };
     }
 }
