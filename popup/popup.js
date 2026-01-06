@@ -166,6 +166,11 @@ async function handleThinkingLevelChange() {
 // ============================================
 
 function setupEventListeners() {
+    // Bouton de sélection de fichiers
+    document.getElementById('select-files-btn').addEventListener('click', () => {
+        document.getElementById('file-input').click();
+    });
+
     // Changement de fichiers sélectionnés
     document.getElementById('file-input').addEventListener('change', handleFileSelection);
 
@@ -196,41 +201,36 @@ function setupEventListeners() {
 // ============================================
 
 function handleFileSelection(e) {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+    selectedFiles = Array.from(e.target.files);
 
-    // Note: On Ubuntu, immediate processing after file selection can crash Chrome.
-    // Deferring the logic gives the popup time to regain focus and stability.
-    setTimeout(() => {
-        selectedFiles = Array.from(files);
+    if (selectedFiles.length === 0) return;
 
-        // Valider les fichiers
-        const validFiles = selectedFiles.filter(file => {
-            const ext = file.name.split('.').pop().toLowerCase();
-            return ['pdf', 'txt', 'md'].includes(ext);
-        });
+    // Valider les fichiers
+    const validFiles = selectedFiles.filter(file => {
+        const ext = file.name.split('.').pop().toLowerCase();
+        return ['pdf', 'txt', 'md'].includes(ext);
+    });
 
-        if (validFiles.length === 0) {
-            showStatus('❌ Aucun fichier valide sélectionné (PDF, TXT, MD uniquement)', 'error');
-            return;
-        }
+    if (validFiles.length === 0) {
+        showStatus('❌ Aucun fichier valide sélectionné (PDF, TXT, MD uniquement)', 'error');
+        return;
+    }
 
-        selectedFiles = validFiles;
+    selectedFiles = validFiles;
 
-        // Afficher la liste
-        const list = document.getElementById('files-list');
-        list.innerHTML = selectedFiles.map(file =>
-            `<li>📄 ${file.name} (${formatFileSize(file.size)})</li>`
-        ).join('');
+    // Afficher la liste
+    const list = document.getElementById('files-list');
+    list.innerHTML = selectedFiles.map(file =>
+        `<li>📄 ${file.name} (${formatFileSize(file.size)})</li>`
+    ).join('');
 
-        // Afficher la section
-        document.getElementById('no-courses-section').style.display = 'none';
-        document.getElementById('files-selected-section').style.display = 'block';
+    // Afficher la section
+    document.getElementById('no-courses-section').style.display = 'none';
+    document.getElementById('files-selected-section').style.display = 'block';
 
-        // Mettre à jour le statut
-        document.getElementById('status-icon').textContent = '🔵';
-        document.getElementById('status-text').textContent = `${selectedFiles.length} fichier(s) sélectionné(s)`;
-    }, 100);
+    // Mettre à jour le statut
+    document.getElementById('status-icon').textContent = '🔵';
+    document.getElementById('status-text').textContent = `${selectedFiles.length} fichier(s) sélectionné(s)`;
 }
 
 function cancelSelection() {
