@@ -73,10 +73,12 @@
                 <p class="info-text">
                     Ajoutez vos cours (PDF, TXT, MD) pour que l'IA réponde à partir de vos documents.
                 </p>
-                <input type="file" id="file-input" accept=".pdf,.txt,.md" multiple style="display: none;">
-                <button id="select-files-btn" class="secondary-btn">
+                <input type="file" id="file-input" accept=".pdf,.txt,.md" multiple
+                    style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; opacity: 0;">
+                <label for="file-input" id="select-files-btn" class="secondary-btn"
+                    style="display: block; text-align: center; cursor: pointer;">
                     📁 Sélectionner des fichiers
-                </button>
+                </label>
             </div>
 
             <!-- Fichiers sélectionnés : afficher liste et bouton upload -->

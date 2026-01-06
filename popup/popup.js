@@ -166,15 +166,6 @@ async function handleThinkingLevelChange() {
 // ============================================
 
 function setupEventListeners() {
-    // Bouton de sélection de fichiers
-    // Note: On Linux/Ubuntu, clicking the file input directly can crash Chrome.
-    // Using setTimeout fixes this by deferring the click to the next event loop.
-    document.getElementById('select-files-btn').addEventListener('click', () => {
-        setTimeout(() => {
-            document.getElementById('file-input').click();
-        }, 100);
-    });
-
     // Changement de fichiers sélectionnés
     document.getElementById('file-input').addEventListener('change', handleFileSelection);
 
