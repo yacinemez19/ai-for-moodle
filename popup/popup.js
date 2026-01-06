@@ -2,8 +2,6 @@
 // VARIABLES GLOBALES
 // ============================================
 
-let selectedFiles = [];
-
 // ============================================
 // INITIALISATION
 // ============================================
@@ -49,7 +47,6 @@ function updateRAGInterface(config) {
 
     // Cacher toutes les sections
     document.getElementById('no-courses-section').style.display = 'none';
-    document.getElementById('files-selected-section').style.display = 'none';
     document.getElementById('indexing-section').style.display = 'none';
     document.getElementById('courses-indexed-section').style.display = 'none';
 
@@ -166,19 +163,14 @@ async function handleThinkingLevelChange() {
 // ============================================
 
 function setupEventListeners() {
-    // Bouton de sélection de fichiers
+    // Bouton de sélection de fichiers - ouvre une page dédiée (fix crash Linux)
     document.getElementById('select-files-btn').addEventListener('click', () => {
-        document.getElementById('file-input').click();
+        chrome.tabs.create({
+            url: chrome.runtime.getURL('upload/upload.html')
+        });
     });
 
-    // Changement de fichiers sélectionnés
-    document.getElementById('file-input').addEventListener('change', handleFileSelection);
 
-    // Bouton d'upload
-    document.getElementById('upload-btn').addEventListener('click', handleUpload);
-
-    // Bouton d'annulation
-    document.getElementById('cancel-selection-btn').addEventListener('click', cancelSelection);
 
     // Bouton de réindexation
     document.getElementById('reindex-btn').addEventListener('click', handleReindex);
@@ -196,134 +188,7 @@ function setupEventListeners() {
     document.getElementById('thinking-level-select').addEventListener('change', handleThinkingLevelChange);
 }
 
-// ============================================
-// GESTION DE LA SÉLECTION DE FICHIERS
-// ============================================
 
-function handleFileSelection(e) {
-    selectedFiles = Array.from(e.target.files);
-
-    if (selectedFiles.length === 0) return;
-
-    // Valider les fichiers
-    const validFiles = selectedFiles.filter(file => {
-        const ext = file.name.split('.').pop().toLowerCase();
-        return ['pdf', 'txt', 'md'].includes(ext);
-    });
-
-    if (validFiles.length === 0) {
-        showStatus('❌ Aucun fichier valide sélectionné (PDF, TXT, MD uniquement)', 'error');
-        return;
-    }
-
-    selectedFiles = validFiles;
-
-    // Afficher la liste
-    const list = document.getElementById('files-list');
-    list.innerHTML = selectedFiles.map(file =>
-        `<li>📄 ${file.name} (${formatFileSize(file.size)})</li>`
-    ).join('');
-
-    // Afficher la section
-    document.getElementById('no-courses-section').style.display = 'none';
-    document.getElementById('files-selected-section').style.display = 'block';
-
-    // Mettre à jour le statut
-    document.getElementById('status-icon').textContent = '🔵';
-    document.getElementById('status-text').textContent = `${selectedFiles.length} fichier(s) sélectionné(s)`;
-}
-
-function cancelSelection() {
-    selectedFiles = [];
-    document.getElementById('file-input').value = '';
-    document.getElementById('files-selected-section').style.display = 'none';
-    document.getElementById('no-courses-section').style.display = 'block';
-
-    // Réinitialiser le statut
-    document.getElementById('status-icon').textContent = '⚪';
-    document.getElementById('status-text').textContent = 'Aucun cours indexé';
-}
-
-// ============================================
-// UPLOAD ET INDEXATION
-// ============================================
-
-async function handleUpload() {
-    const apiKey = document.getElementById('api-key').value.trim();
-
-    if (!apiKey) {
-        showStatus('❌ Veuillez d\'abord entrer votre clé API', 'error');
-        return;
-    }
-
-    if (selectedFiles.length === 0) {
-        showStatus('❌ Aucun fichier sélectionné', 'error');
-        return;
-    }
-
-    // Afficher la progression
-    document.getElementById('files-selected-section').style.display = 'none';
-    document.getElementById('indexing-section').style.display = 'block';
-    document.getElementById('status-icon').textContent = '⏳';
-    document.getElementById('status-text').textContent = 'Indexation en cours...';
-
-    try {
-        // Convertir les fichiers en base64
-        updateProgress(10, 'Préparation des fichiers...');
-        const filesData = await Promise.all(
-            selectedFiles.map(async (file) => {
-                const base64 = await fileToBase64(file);
-                return {
-                    name: file.name,
-                    mimeType: file.type || getMimeType(file.name),
-                    data: base64.split(',')[1], // Enlever le préfixe data:...
-                    size: file.size
-                };
-            })
-        );
-
-        updateProgress(30, 'Envoi à l\'API Gemini...');
-
-        // Envoyer au background pour traitement
-        const response = await chrome.runtime.sendMessage({
-            action: 'indexCourses',
-            apiKey: apiKey,
-            filesData: filesData
-        });
-
-        if (!response.success) {
-            throw new Error(response.error);
-        }
-
-        // Succès !
-        updateProgress(100, 'Indexation terminée !');
-        showStatus('✅ Cours indexés avec succès !', 'success');
-
-        // Recharger la configuration
-        setTimeout(async () => {
-            await loadConfiguration();
-        }, 1500);
-
-    } catch (error) {
-        console.error('Erreur d\'indexation:', error);
-        showStatus(`❌ Erreur : ${error.message}`, 'error');
-
-        // Revenir à la sélection
-        document.getElementById('indexing-section').style.display = 'none';
-        document.getElementById('files-selected-section').style.display = 'block';
-    }
-}
-
-function updateProgress(percent, text) {
-    document.getElementById('progress-fill').style.width = percent + '%';
-    document.getElementById('progress-text').textContent = text;
-
-    if (percent < 100) {
-        document.getElementById('progress-details').textContent = `${percent}%`;
-    } else {
-        document.getElementById('progress-details').textContent = '✅ Terminé';
-    }
-}
 
 // ============================================
 // RÉINDEXATION
@@ -345,10 +210,10 @@ async function handleReindex() {
 
         showStatus('✅ Configuration supprimée', 'success');
 
-        // Recharger l'interface
-        setTimeout(async () => {
-            await loadConfiguration();
-        }, 1000);
+        // Ouvrir la page d'upload
+        chrome.tabs.create({
+            url: chrome.runtime.getURL('upload/upload.html')
+        });
 
     } catch (error) {
         showStatus(`❌ Erreur : ${error.message}`, 'error');
@@ -408,31 +273,6 @@ async function handleSave() {
 // ============================================
 // UTILITAIRES
 // ============================================
-
-function fileToBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-}
-
-function getMimeType(filename) {
-    const ext = filename.split('.').pop().toLowerCase();
-    const mimeTypes = {
-        'pdf': 'application/pdf',
-        'txt': 'text/plain',
-        'md': 'text/markdown'
-    };
-    return mimeTypes[ext] || 'application/octet-stream';
-}
-
-function formatFileSize(bytes) {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-}
 
 function showStatus(message, type) {
     const status = document.getElementById('status');

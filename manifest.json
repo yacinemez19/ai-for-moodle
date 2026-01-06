@@ -46,7 +46,7 @@
 
   "web_accessible_resources": [
     {
-      "resources": ["test/*"],
+      "resources": ["test/*", "upload/*"],
       "matches": ["<all_urls>"]
     }
   ],

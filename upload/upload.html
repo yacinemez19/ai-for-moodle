@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Upload de cours - Moodle Gemini Assistant</title>
+    <link rel="stylesheet" href="upload.css">
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>📚 Upload de cours</h1>
+            <p class="subtitle">Ajoutez vos documents pour activer le RAG</p>
+        </header>
+
+        <main class="main-content">
+            <!-- Zone de drop / sélection -->
+            <div id="dropzone" class="dropzone">
+                <div class="dropzone-content">
+                    <span class="dropzone-icon">📁</span>
+                    <p class="dropzone-text">Glissez-déposez vos fichiers ici</p>
+                    <p class="dropzone-subtext">ou</p>
+                    <button id="select-files-btn" class="primary-btn">
+                        Sélectionner des fichiers
+                    </button>
+                    <input type="file" id="file-input" accept=".pdf,.txt,.md" multiple>
+                    <p class="dropzone-formats">Formats acceptés : PDF, TXT, MD</p>
+                </div>
+            </div>
+
+            <!-- Liste des fichiers sélectionnés -->
+            <div id="files-section" class="files-section" style="display: none;">
+                <h2>Fichiers sélectionnés</h2>
+                <ul id="files-list" class="files-list"></ul>
+                <div class="button-group">
+                    <button id="upload-btn" class="primary-btn">
+                        🚀 Indexer les cours
+                    </button>
+                    <button id="cancel-btn" class="secondary-btn">
+                        Annuler
+                    </button>
+                </div>
+            </div>
+
+            <!-- Progression -->
+            <div id="progress-section" class="progress-section" style="display: none;">
+                <div class="progress-container">
+                    <p id="progress-text">Indexation en cours...</p>
+                    <div class="progress-bar">
+                        <div id="progress-fill"></div>
+                    </div>
+                    <p id="progress-details" class="progress-details"></p>
+                </div>
+            </div>
+
+            <!-- Succès -->
+            <div id="success-section" class="success-section" style="display: none;">
+                <div class="success-content">
+                    <span class="success-icon">✅</span>
+                    <h2>Indexation terminée !</h2>
+                    <p id="success-message">Vos cours ont été indexés avec succès.</p>
+                    <p class="auto-close-text">Cette page va se fermer automatiquement...</p>
+                </div>
+            </div>
+
+            <!-- Erreur -->
+            <div id="error-section" class="error-section" style="display: none;">
+                <div class="error-content">
+                    <span class="error-icon">❌</span>
+                    <h2>Erreur</h2>
+                    <p id="error-message"></p>
+                    <button id="retry-btn" class="primary-btn">
+                        🔄 Réessayer
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>Moodle Gemini Assistant</p>
+        </footer>
+    </div>
+    <script src="upload.js"></script>
+</body>
+
+</html>

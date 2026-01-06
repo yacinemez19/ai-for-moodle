@@ -73,27 +73,9 @@
                 <p class="info-text">
                     Ajoutez vos cours (PDF, TXT, MD) pour que l'IA réponde à partir de vos documents.
                 </p>
-                <input type="file" id="file-input" accept=".pdf,.txt,.md" multiple
-                    style="position: absolute; opacity: 0; width: 0; height: 0; overflow: hidden;">
                 <button id="select-files-btn" class="secondary-btn">
                     📁 Sélectionner des fichiers
                 </button>
-            </div>
-
-            <!-- Fichiers sélectionnés : afficher liste et bouton upload -->
-            <div id="files-selected-section" style="display: none;">
-                <div class="files-list-container">
-                    <p class="section-title">Fichiers sélectionnés :</p>
-                    <ul id="files-list" class="files-list"></ul>
-                </div>
-                <div class="button-group">
-                    <button id="upload-btn" class="primary-btn">
-                        🚀 Indexer les cours
-                    </button>
-                    <button id="cancel-selection-btn" class="secondary-btn">
-                        Annuler
-                    </button>
-                </div>
             </div>
 
             <!-- Indexation en cours -->
