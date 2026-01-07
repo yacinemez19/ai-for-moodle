@@ -244,10 +244,11 @@ function highlightCorrectAnswer(questionData, responseData) {
                     const optionLetter = answerNumber.innerText.trim().toLowerCase().replace('.', '');
 
                     if (optionLetter === letter) {
-                        // Mettre en gras le texte de la réponse
+                        // Ajouter un point à la fin du texte de la réponse
                         const textContainer = div.querySelector('.flex-fill, .ms-1, [data-region="answer-label"]');
                         if (textContainer) {
-                            textContainer.style.fontWeight = '700';
+                            // Ajouter le point comme nœud texte pour préserver la structure HTML
+                            textContainer.appendChild(document.createTextNode('.'));
                         }
                     }
                 }
@@ -265,13 +266,77 @@ function highlightCorrectAnswer(questionData, responseData) {
         if (isTrue) {
             const trueLabel = questionDiv.querySelector('label[for*="answertrue"]');
             if (trueLabel) {
-                trueLabel.style.fontWeight = '700';
+                trueLabel.appendChild(document.createTextNode('.'));
             }
         } else if (isFalse) {
             const falseLabel = questionDiv.querySelector('label[for*="answerfalse"]');
             if (falseLabel) {
-                falseLabel.style.fontWeight = '700';
+                falseLabel.appendChild(document.createTextNode('.'));
             }
+        }
+    }
+    // Questions match : ajouter "*" aux bonnes réponses dans les menus déroulants
+    else if (questionData.type === 'match') {
+        const matchPairs = responseData.matchPairs || [];
+
+        if (matchPairs.length === 0) {
+            // Fallback : affichage ligne par ligne si pas de pairs extraits
+            console.warn('[Exam Mode] Pas de matchPairs extraits, fallback vers affichage ligne par ligne');
+            showResponseLineByLine(responseData.rawText || responseData.answer);
+            return;
+        }
+
+        const questionDiv = document.querySelector('.que.match');
+        if (!questionDiv) return;
+
+        const rows = questionDiv.querySelectorAll('.answer tbody tr');
+        let matchesFound = 0;
+
+        rows.forEach(row => {
+            // Texte de l'élément à gauche
+            const itemTextElement = row.querySelector('.text');
+            if (!itemTextElement) return;
+            const itemText = itemTextElement.innerText.trim().toLowerCase();
+
+            // Trouver la correspondance dans les pairs
+            const matchingPair = matchPairs.find(pair => {
+                // Comparaison flexible : vérifier si l'item contient le texte ou vice versa
+                const pairItemLower = pair.item.toLowerCase();
+                return itemText.includes(pairItemLower) || pairItemLower.includes(itemText) ||
+                    itemText === pairItemLower;
+            });
+
+            if (matchingPair) {
+                // Trouver le menu déroulant
+                const select = row.querySelector('select');
+                if (!select) return;
+
+                const categoryLower = matchingPair.category.toLowerCase();
+
+                // Parcourir les options pour trouver la bonne et ajouter "*"
+                const options = select.querySelectorAll('option');
+                options.forEach(opt => {
+                    const optText = opt.textContent.trim().toLowerCase();
+
+                    // Comparaison flexible
+                    if (optText.includes(categoryLower) || categoryLower.includes(optText) ||
+                        optText === categoryLower) {
+                        // Ajouter "." à la fin si pas déjà présent
+                        if (true) {
+                            opt.textContent = opt.textContent + '.';
+                            matchesFound++;
+                        }
+                    }
+                });
+            }
+        });
+
+        console.log(`[Exam Mode] ${matchesFound} correspondances marquées avec *`);
+
+        // Si aucune correspondance trouvée, fallback
+        if (matchesFound === 0) {
+            console.warn('[Exam Mode] Aucune correspondance trouvée dans le DOM, fallback vers affichage ligne par ligne');
+            showResponseLineByLine(responseData.rawText || responseData.answer);
         }
     }
     // Autres types : affichage ligne par ligne (utiliser rawText pour la réponse complète)

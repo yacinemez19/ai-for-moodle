@@ -334,7 +334,38 @@ function sleep(ms) {
 // 3. PARSING DE LA RÉPONSE
 // ============================================
 
-function parseGeminiResponse(data) {
+// Parser spécifique pour les questions match
+// Extrait les associations item → catégorie depuis la réponse
+function parseMatchResponse(text) {
+    const pairs = [];
+
+    // Chercher les lignes au format "1. Item → Catégorie" ou "1. Item -> Catégorie"
+    const lines = text.split('\n');
+
+    for (const line of lines) {
+        // Format attendu: "1. Item texte → Catégorie" ou "- Item → Catégorie"
+        const match = line.match(/^\s*(?:\d+\.|-)?\s*(.+?)\s*(?:→|->|=>)\s*(.+?)\s*$/i);
+        if (match) {
+            const itemText = match[1].trim();
+            const categoryText = match[2].trim();
+
+            // Ignorer les lignes de template ou vides
+            if (itemText && categoryText &&
+                !itemText.includes('[') && !categoryText.includes('[') &&
+                itemText.toLowerCase() !== 'item' && categoryText.toLowerCase() !== 'catégorie') {
+                pairs.push({
+                    item: itemText,
+                    category: categoryText
+                });
+            }
+        }
+    }
+
+    console.log('[Background] Match pairs extraits:', pairs);
+    return pairs;
+}
+
+function parseGeminiResponse(data, questionType) {
     try {
         const text = data.candidates[0].content.parts[0].text;
 
@@ -389,11 +420,18 @@ function parseGeminiResponse(data) {
 
         console.log('[Background] Sources extraites:', uniqueSources);
 
+        // Pour les questions match, extraire les pairs
+        let matchPairs = [];
+        if (questionType === 'match') {
+            matchPairs = parseMatchResponse(text);
+        }
+
         return {
             answer: reponseMatch ? reponseMatch[1].trim() : text.substring(0, 100),
             reasoning: justificationMatch ? justificationMatch[1].trim() : 'Pas de justification fournie.',
             rawText: text,
-            sources: uniqueSources
+            sources: uniqueSources,
+            matchPairs: matchPairs
         };
     } catch (error) {
         console.error('Parse error:', error);
@@ -401,7 +439,8 @@ function parseGeminiResponse(data) {
             answer: 'Erreur de parsing',
             reasoning: 'Impossible d\'extraire la réponse',
             rawText: JSON.stringify(data),
-            sources: []
+            sources: [],
+            matchPairs: []
         };
     }
 }
@@ -461,8 +500,8 @@ async function handleAnalyze(questionData) {
     const apiResponse = await callGeminiAPI(prompt, storage.apiKey);
     console.log('[Background] API Response:', apiResponse);
 
-    // 4. Parser la réponse
-    const parsedResponse = parseGeminiResponse(apiResponse);
+    // 4. Parser la réponse (passer le type de question pour un parsing spécifique)
+    const parsedResponse = parseGeminiResponse(apiResponse, questionData.type);
     console.log('[Background] Parsed Response:', parsedResponse);
 
     return parsedResponse;
