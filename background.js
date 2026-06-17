@@ -101,7 +101,7 @@ function buildPrompt(questionData) {
 // ============================================
 
 async function callGeminiAPI(prompt, apiKey) {
-    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent';
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent';
 
     // Récupérer la configuration RAG et le niveau de réflexion
     const storage = await chrome.storage.local.get(['fileStoreId', 'fileStoreStatus', 'thinkingLevel']);
@@ -115,10 +115,9 @@ async function callGeminiAPI(prompt, apiKey) {
             parts: [{ text: prompt }]
         }],
         generationConfig: {
-            temperature: 0.1,
+            // Gemini 3.x : temperature / topP / topK ne sont plus recommandés
+            // (ils contredisent l'optimisation du raisonnement). Voir doc « What's new in Gemini 3.5 ».
             maxOutputTokens: 5000,
-            topK: 64,
-            topP: 0.25,
             thinkingConfig: {
                 thinkingLevel: thinkingLevel
             }
